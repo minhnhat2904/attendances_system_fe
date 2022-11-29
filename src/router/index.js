@@ -54,6 +54,6 @@ const router = createRouter({
 	],
 })
 
-// router.beforeEach(authMiddleware)
+router.beforeEach(authMiddleware)
 
 export default router

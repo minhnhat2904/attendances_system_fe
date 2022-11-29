@@ -1,7 +1,6 @@
 <script setup>
 import { useUserStore } from '@/stores/user.js'
 import { ref } from 'vue'
-import http from '@/service/http.js'
 
 const user = useUserStore()
 
@@ -10,15 +9,17 @@ const newPassword = ref('')
 const repeatNewPassword = ref('')
 
 const handleChangePassword = async () => {
-	const data = {
+	const requestBody = {
 		password: currentPassword.value,
 		newPassword: newPassword.value,
 	}
-	const response = await http.put('/auth/updatePassword', data)
-	handleReset()
+	const response = await user.changePassword(requestBody)
+	if (response === 200) {
+		handleReset()
+	}
 }
 
-const handleReset = async () => {
+const handleReset = () => {
 	currentPassword.value = ''
 	newPassword.value = ''
 	repeatNewPassword.value = ''

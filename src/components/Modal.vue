@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from '@vue/reactivity'
+import { reactive, ref } from '@vue/reactivity'
 
 const props = defineProps({
 	show: {
@@ -12,54 +12,6 @@ const props = defineProps({
 	},
 	data: Object,
 })
-
-const TABLE_REPORT_HEADER = reactive([
-	{
-		id: 1,
-		type: 'date',
-		value: 'Day report',
-	},
-	{
-		id: 2,
-		type: 'select',
-		value: 'Project in charge',
-	},
-	{
-		id: 3,
-		type: 'select',
-		value: 'Type of work',
-	},
-	{
-		id: 4,
-		type: 'input',
-		value: 'Ticket',
-	},
-	{
-		id: 5,
-		type: 'select',
-		value: 'Task',
-	},
-	{
-		id: 6,
-		type: 'select',
-		value: 'TaskType',
-	},
-	{
-		id: 7,
-		type: 'input',
-		value: 'hours',
-	},
-	{
-		id: 8,
-		type: 'input',
-		value: 'Note',
-	},
-	{
-		id: 9,
-		type: 'action',
-		value: 'Note',
-	},
-])
 
 const emit = defineEmits(['handleSaveWorkingReport', 'handleCancel'])
 </script>
@@ -76,47 +28,54 @@ const emit = defineEmits(['handleSaveWorkingReport', 'handleCancel'])
 				</span>
 			</div>
 			<div class="body">
-				<div>
-					<table id="tableComponent" class="table table-bordered table-striped">
-						<tr>
-							<th v-for="header in TABLE_REPORT_HEADER" :key="header.id">
-								{{ header.value }}
-							</th>
-						</tr>
-						<tr v-for="item in data" :key="item.id">
-							<td v-for="header in TABLE_REPORT_HEADER" :key="header.id">
-								<span v-if="header.type === 'date'">
-									<input type="date" />
-								</span>
-								<span v-if="header.type === 'input'"> <input type="text" /> </span>
-								<span v-if="header.type === 'select'">
-									<select id="">
-										<option
-											v-for="(hour, index) in hoursOfLeave"
-											:key="index"
-											:value="hour.value">
-											{{ hour.text }}
-										</option>
-									</select>
-								</span>
-								<span
-									v-if="header.type === 'action'"
-									class="material-symbols-outlined">
-									delete
-								</span>
-							</td>
-						</tr>
-					</table>
+				<div class="row-1">
+					<div class="date-report">
+						<p class="title">Date Report</p>
+						<input
+							type="date"
+							v-model="date"
+							@input="$emit('date', $event.target.value)" />
+					</div>
+					<div class="project">
+						<p class="title">Project in charge</p>
+						<select v-model="selected.project">
+							<option v-for="item in projectOptions" :key="item" :value="item.value">
+								{{ item.text }}
+							</option>
+						</select>
+					</div>
 				</div>
-				<div class="action">
-					<button>+ Add</button>
+				<div class="row-2">
+					<div class="ticket">
+						<p class="title">Ticket</p>
+						<input type="text" />
+					</div>
+					<div class="task">
+						<p class="title">Task</p>
+						<select v-model="selected.task">
+							<option v-for="item in taskOptions" :key="item" :value="item.value">
+								{{ item.text }}
+							</option>
+						</select>
+					</div>
+				</div>
+				<div class="row-3">
+					<div class="time">
+						<p class="title">Time</p>
+						<input type="text" v-model="time" />
+					</div>
+					<div class="note">
+						<p class="title">Note</p>
+						<input type="text" v-model="note" />
+					</div>
 				</div>
 			</div>
+
 			<div class="footer">
-				<button class="btn-save" @click="emit('handleSaveWorkingReport')"
-					>Save</button
-				>
-				<button class="btn-cancel" @click="emit('handleCancel')">Cancel</button>
+				<button class="btn-save" @click="emit('handleSaveWorkingReport')">
+					Save
+				</button>
+				<button class="btn-cancel" @click="emit('handleCancel')"> Cancel </button>
 			</div>
 		</div>
 	</div>
@@ -135,8 +94,8 @@ const emit = defineEmits(['handleSaveWorkingReport', 'handleCancel'])
 	align-items: center;
 	justify-content: center;
 	.modal-box {
-		width: 1200px;
-		min-height: 320px;
+		width: auto;
+		min-height: 400px;
 		background: white;
 		display: flex;
 		justify-content: space-between;
@@ -165,23 +124,49 @@ const emit = defineEmits(['handleSaveWorkingReport', 'handleCancel'])
 
 		.body {
 			width: 100%;
-			height: calc(320px - 100px);
+			height: calc(400px - 100px);
 			display: flex;
 			flex-direction: column;
 			justify-content: start;
 			padding: 1rem 2rem;
+			gap: 1rem;
 
-			.action {
-				button {
-					background: #337ab7;
+			.row-1,
+			.row-2,
+			.row-3 {
+				display: flex;
+				gap: 2rem;
 
-					&:hover {
-						background: #104b80;
-					}
+				.title {
+					font-weight: 600;
+					width: 130px;
+				}
 
-					&:active {
-						background: #053660;
-					}
+				.date-report,
+				.project,
+				.ticket,
+				.task,
+				.time,
+				.note {
+					display: flex;
+					align-items: center;
+				}
+			}
+
+			input,
+			select {
+				width: 200px;
+				height: 40px;
+				padding: 0 0.5rem;
+				border-radius: 5px;
+				border-style: solid;
+				border-width: 1px;
+				border: 1px solid #d9d9d9;
+
+				&:focus {
+					border: 1px solid #9bcbf0;
+					outline: none;
+					box-shadow: #9bcbf0 0px 0px 5px 0px;
 				}
 			}
 		}

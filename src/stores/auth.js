@@ -25,15 +25,6 @@ export const useAuthStore = defineStore({
 				throw error
 			}
 		},
-		async register(props) {
-			const user = useUserStore()
-			try {
-			} catch (error) {}
-		},
-		async forgotPassword({ email }) {
-			try {
-			} catch (error) {}
-		},
 
 		async logout() {
 			const user = useUserStore()

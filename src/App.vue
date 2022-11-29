@@ -4,6 +4,7 @@ import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import DefaultLayout from '@/layouts/defaultLayout.vue'
 import AuthLayout from '@/layouts/authLayout.vue'
+
 const { getAuthenticate } = useAuthStore()
 
 const route = useRoute()

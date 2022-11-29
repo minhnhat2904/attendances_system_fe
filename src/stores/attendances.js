@@ -1,8 +1,4 @@
 import { defineStore } from 'pinia'
-import { useRouter } from 'vue-router'
-import { useUserStore } from '@/stores/user.js'
-import { useApi } from '@/api/useAPI'
-import axios from 'axios'
 import http from '@/service/http.js'
 
 export const useAttendanceStore = defineStore({

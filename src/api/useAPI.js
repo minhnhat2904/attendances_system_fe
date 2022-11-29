@@ -23,13 +23,14 @@ export const useApi = (endpoint = 'api') => {
 	})
 
 	// axiosInstance.interceptors.response.use(resp => resp, middleware401)
-	axiosInstance.defaults.headers.common['Access-Control-Allow-Origin'] = '*';
-	axiosInstance.defaults.headers.common['Access-Control-Allow-Headers'] = 'authorization';
+	axiosInstance.defaults.headers.common['Access-Control-Allow-Origin'] = '*'
+	axiosInstance.defaults.headers.common['Access-Control-Allow-Headers'] =
+		'authorization'
 
-	axiosInstance.interceptors.request.use(async (request) => {
-		const token = localStorage.getItem('token');
-		request.headers.authorization = `Bearer ${token}`;
-		return request;
+	axiosInstance.interceptors.request.use(async request => {
+		const token = localStorage.getItem('token')
+		request.headers.authorization = `Bearer ${token}`
+		return request
 	})
 	return axiosInstance
 }

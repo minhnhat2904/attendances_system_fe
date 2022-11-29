@@ -3,6 +3,7 @@ import { useAuthStore } from '@/stores/auth.js'
 import Sidebar from '@/components/Sidebar.vue'
 
 const auth = useAuthStore()
+
 const logoutFn = async () => {
 	await auth.logout()
 }
