@@ -92,10 +92,10 @@ const service = {
 				})
 		})
 	},
-	delete(endPoint) {
+	delete(endPoint, params) {
 		return new Promise((resolve, reject) => {
 			axiosInstance
-				.delete(`${endPoint}`)
+				.delete(`${endPoint}`, { data: params })
 				.then(response => {
 					handleOkResponse(response, resolve)
 				})

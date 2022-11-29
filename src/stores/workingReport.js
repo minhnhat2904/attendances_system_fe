@@ -53,7 +53,6 @@ export const useWorkingReportStore = defineStore({
 		async deleteWorkingReport(id) {
 			const toast = useToast()
 			try {
-				console.log(id)
 				const response = await http.delete('/reports', id)
 				toast.success('Delete working report successfully!', {
 					timeout: 2000,
