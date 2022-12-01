@@ -14,7 +14,7 @@ const handleChangePassword = async () => {
 		newPassword: newPassword.value,
 	}
 	const response = await user.changePassword(requestBody)
-	if (response === 200) {
+	if (response === true) {
 		handleReset()
 	}
 }

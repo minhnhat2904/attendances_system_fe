@@ -1,13 +1,35 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user.js'
+import { useCreateRequestStore } from '@/stores/createRequest.js'
+const { getProfile } = useUserStore()
+const { fetchRequestResult } = useCreateRequestStore()
+const { userInfo } = storeToRefs(useUserStore())
+const { requestResultList } = storeToRefs(useCreateRequestStore())
 
+onMounted(async () => {
+	await getProfile()
+	fetchRequestResult(userInfo.value.id)
+})
+
+const checkbox = ref('')
+const entrySelected = ref(25)
 const entryOptions = reactive([
 	{ text: 10, value: '10' },
 	{ text: 25, value: '25' },
 	{ text: 50, value: '50' },
 	{ text: 100, value: '100' },
 ])
-const entrySelected = ref(25)
+const typeRequest = ref(2)
+const requestTypes = reactive([
+	{ text: 'Saved', value: 1 },
+	{ text: 'Approved', value: 2 },
+	{ text: 'Rejected', value: 3 },
+	{ text: 'Replied', value: 4 },
+	{ text: 'Waiting', value: 5 },
+])
+
 const fields = [
 	{
 		type: 'select',
@@ -16,84 +38,46 @@ const fields = [
 	{
 		type: 'string',
 		value: 'Created',
+		key: 'createdAt',
+		id: '',
 	},
 	{
 		type: 'string',
 		value: 'From',
+		key: 'startDate',
 	},
 	{
 		type: 'string',
 		value: 'To',
+		key: 'endDate',
 	},
 	{
 		type: 'string',
 		value: 'Time Off',
+		key: 'timeOff',
 	},
 	{
 		type: 'string',
 		value: 'Type Off',
+		key: 'typeOff',
 	},
 	{
 		type: 'string',
 		value: 'Reason',
+		key: 'reason',
 	},
 	{
 		type: 'string',
 		value: 'Status',
+		key: 'status',
 	},
 	{
 		type: 'string',
 		value: 'Rejected Reason',
-	},
-	{
-		type: 'action',
-		value: 'action',
+		key: 'rejectedReason',
 	},
 ]
-const dataTable = reactive([
-	{
-		id: 1,
-		Created: 'Frozen Yogurt',
-		From: 159,
-		To: 159,
-		'Time Off': 159,
-		'Type Off': 159,
-		Reason: 159,
-		Status: 159,
-		'Rejected Reason': 159,
-	},
-	{
-		id: 2,
-		Created: 'Frozen Yogurt',
-		From: 159,
-		To: 159,
-		'Time Off': 159,
-		'Type Off': 159,
-		Reason: 159,
-		Status: 159,
-		'Rejected Reason': 159,
-	},
-	{
-		id: 3,
-		Created: 'Frozen Yogurt',
-		From: 159,
-		To: 159,
-		'Time Off': 159,
-		'Type Off': 159,
-		Reason: 159,
-		Status: 159,
-		'Rejected Reason': 159,
-	},
-])
 
-const requestTypes = reactive([
-	{ text: 'Saved', value: 1 },
-	{ text: 'Approved', value: 2 },
-	{ text: 'Rejected', value: 3 },
-	{ text: 'Replied', value: 4 },
-	{ text: 'Waiting', value: 5 },
-])
-const typeRequest = ref(2)
 const dateTime = ref('3 days and 3 hours')
 
 const handleSearch = () => {
@@ -102,14 +86,6 @@ const handleSearch = () => {
 
 const handleReset = () => {
 	console.log('reset')
-}
-
-const handleEdit = item => {
-	console.log(item)
-}
-
-const handleDelete = id => {
-	console.log(id)
 }
 </script>
 <template>
@@ -178,24 +154,18 @@ const handleDelete = id => {
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in dataTable" :key="item">
+				<tr v-for="item in requestResultList" :key="item">
 					<td v-for="field in fields" :key="field">
 						<span v-if="field.type === 'select'">
-							<input type="checkbox" />
+							<input type="checkbox" v-model="checkbox" />
 						</span>
-						<span v-if="field.type === 'string'">{{ item[field.value] }}</span>
-						<span v-if="field.type === 'action'">
-							<span
-								class="material-symbols-outlined btn-edit"
-								@click="handleEdit(item)">
-								edit
-							</span>
-
-							<span
-								class="material-symbols-outlined btn-delete"
-								@click="handleDelete(item.id)">
-								delete
-							</span>
+						<span v-if="field.type === 'string'">{{ item[field.key] }}</span>
+						<span v-if="field.key === 'timeOff'">
+							{{
+								!item.amountDay
+									? '0d 0h'
+									: item.amountDay + 'd' + ' ' + item.amountHour + 'h'
+							}}
 						</span>
 					</td>
 				</tr>
@@ -286,37 +256,37 @@ const handleDelete = id => {
 	p {
 		margin-bottom: 0;
 	}
-}
-.table {
-	width: 100%;
+	.table {
+		width: 100%;
 
-	.header-title {
-		font-weight: bold;
-		color: white;
-		background: #337ab7;
-	}
-
-	&-body {
-		tr td:first-child,
-		td:last-child {
-			text-align: center;
+		.header-title {
+			font-weight: bold;
+			color: white;
+			background: #337ab7;
 		}
 
-		.btn-edit,
-		.btn-delete {
-			cursor: pointer;
-		}
-
-		.btn-edit {
-			color: rgb(69, 69, 220);
-			&:hover {
-				color: rgb(23, 23, 156);
+		&-body {
+			tr td:first-child,
+			td:last-child {
+				text-align: center;
 			}
-		}
-		.btn-delete {
-			color: red;
-			&:hover {
-				color: rgb(158, 12, 12);
+
+			.btn-edit,
+			.btn-delete {
+				cursor: pointer;
+			}
+
+			.btn-edit {
+				color: rgb(69, 69, 220);
+				&:hover {
+					color: rgb(23, 23, 156);
+				}
+			}
+			.btn-delete {
+				color: red;
+				&:hover {
+					color: rgb(158, 12, 12);
+				}
 			}
 		}
 	}

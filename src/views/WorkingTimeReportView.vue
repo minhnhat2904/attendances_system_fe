@@ -1,9 +1,9 @@
 <script setup>
-import { useUserStore } from '@/stores/user.js'
-import { useWorkingReportStore } from '@/stores/workingReport.js'
-import { useAttendanceStore } from '@/stores/attendances.js'
-import { storeToRefs } from 'pinia'
 import { reactive, ref, onMounted } from 'vue'
+import { storeToRefs } from 'pinia'
+import { useUserStore } from '@/stores/user.js'
+import { useAttendanceStore } from '@/stores/attendances.js'
+import { useWorkingReportStore } from '@/stores/workingReport.js'
 
 const { get } = useAttendanceStore()
 const { getProfile } = useUserStore()
@@ -23,13 +23,27 @@ onMounted(async () => {
 	await getProfile()
 	getWorkingReport(userInfo.value.id)
 })
+
+const entrySelected = ref(25)
+const isShowModal = ref(false)
+const isEditMode = ref(false)
+
+const queryParamsWorkingReport = reactive({
+	time: '',
+	note: '',
+	date: '',
+	ticket: '',
+	workingreportId: '',
+	project: '1',
+	task: '1',
+})
+
 const entryOptions = reactive([
 	{ text: 10, value: '10' },
 	{ text: 25, value: '25' },
 	{ text: 50, value: '50' },
 	{ text: 100, value: '100' },
 ])
-const entrySelected = ref(25)
 const fields = [
 	{
 		type: 'string',
@@ -73,18 +87,6 @@ const fields = [
 	},
 ]
 
-const time = ref('')
-const note = ref('')
-const date = ref('')
-const ticket = ref('')
-const workingreportId = ref('')
-const ids = reactive([])
-
-const selected = reactive({
-	project: '1',
-	task: '1',
-})
-
 const projectOptions = reactive([
 	{ text: 'project 1', value: '1' },
 	{ text: 'project 2', value: '2' },
@@ -96,55 +98,72 @@ const taskOptions = reactive([
 	{ text: 'Coding', value: '2' },
 	{ text: 'Study', value: '3' },
 ])
-const isShowModal = ref(false)
-const isEditMode = ref(false)
 
-const handleCreate = () => {
+const handleShowModalCreate = () => {
 	isShowModal.value = true
 }
 
 const handleSaveWorkingReport = async () => {
 	const requestBody = {
-		date: date.value,
-		project: selected.project,
-		ticket: ticket.value,
-		task: selected.task,
-		time: time.value,
-		note: note.value,
+		date: queryParamsWorkingReport.date,
+		project: queryParamsWorkingReport.project,
+		ticket: queryParamsWorkingReport.ticket,
+		task: queryParamsWorkingReport.task,
+		time: queryParamsWorkingReport.time,
+		note: queryParamsWorkingReport.note,
 	}
 
-	await createWorkingReport(requestBody)
-	isShowModal.value = false
+	const result = await createWorkingReport(requestBody)
+
+	if (result.data.status === true) {
+		clearInput()
+		isShowModal.value = false
+	}
 }
 
-const handleEdit = async item => {
-	date.value = item.date
-	selected.project = item.project
-	ticket.value = item.ticket
-	selected.task = item.task
-	time.value = item.time
-	note.value = item.note
-	workingreportId.value = item.id
+const handleShowModalEdit = async item => {
+	queryParamsWorkingReport.date = item.date
+	queryParamsWorkingReport.project = item.project
+	queryParamsWorkingReport.ticket = item.ticket
+	queryParamsWorkingReport.task = item.task
+	queryParamsWorkingReport.time = item.time
+	queryParamsWorkingReport.note = item.note
+	queryParamsWorkingReport.workingreportId = item.id
 	isShowModal.value = true
 	isEditMode.value = true
 }
 
 const handleUpdateWorkingReport = async () => {
 	const requestBody = {
-		date: date.value,
-		project: selected.project,
-		ticket: ticket.value,
-		task: selected.task,
-		time: time.value,
-		note: note.value,
+		date: queryParamsWorkingReport.date,
+		project: queryParamsWorkingReport.project,
+		ticket: queryParamsWorkingReport.ticket,
+		task: queryParamsWorkingReport.task,
+		time: queryParamsWorkingReport.time,
+		note: queryParamsWorkingReport.note,
 	}
 
-	const result = await updateWorkingReport(requestBody, workingreportId.value)
+	const result = await updateWorkingReport(
+		requestBody,
+		queryParamsWorkingReport.workingreportId
+	)
+
 	if (result.data.status === true) {
 		await getWorkingReport(userInfo.value.id)
+		clearInput()
 		isEditMode.value = false
 		isShowModal.value = false
 	}
+}
+
+const clearInput = () => {
+	queryParamsWorkingReport.date = new Date(null)
+	queryParamsWorkingReport.project = '1'
+	queryParamsWorkingReport.ticket = ''
+	queryParamsWorkingReport.task = '1'
+	queryParamsWorkingReport.time = ''
+	queryParamsWorkingReport.note = ''
+	queryParamsWorkingReport.workingreportId = ''
 }
 
 const handleDeleteWorkingReport = async id => {
@@ -160,6 +179,7 @@ const handleDeleteWorkingReport = async id => {
 const handleCancel = () => {
 	isShowModal.value = false
 	isEditMode.value = false
+	clearInput()
 }
 </script>
 <template>
@@ -193,7 +213,7 @@ const handleCancel = () => {
 			</div>
 		</details>
 
-		<button class="btn-create" @click="handleCreate">Create Report</button>
+		<button class="btn-create" @click="handleShowModalCreate">Create Report</button>
 
 		<div class="show-list">
 			<span> Show </span>
@@ -225,7 +245,7 @@ const handleCancel = () => {
 						<span v-if="field.type === 'action'">
 							<span
 								class="material-symbols-outlined btn-edit"
-								@click="handleEdit(item)">
+								@click="handleShowModalEdit(item)">
 								edit
 							</span>
 
@@ -243,7 +263,8 @@ const handleCancel = () => {
 		<div class="modal-form" v-if="isShowModal">
 			<div class="modal-box">
 				<div class="header">
-					<h4>Create Report</h4>
+					<h4 v-if="isEditMode === false">Create Report</h4>
+					<h4 v-else>Update Report</h4>
 					<span class="material-symbols-outlined icon-close" @click="handleCancel">
 						close
 					</span>
@@ -252,14 +273,11 @@ const handleCancel = () => {
 					<div class="row-1">
 						<div class="date-report">
 							<p class="title">Date Report</p>
-							<input
-								type="date"
-								v-model="date"
-								@input="$emit('date', $event.target.value)" />
+							<input type="date" v-model="queryParamsWorkingReport.date" />
 						</div>
 						<div class="project">
 							<p class="title">Project in charge</p>
-							<select v-model="selected.project">
+							<select v-model="queryParamsWorkingReport.project">
 								<option
 									v-for="item in projectOptions"
 									:key="item"
@@ -272,11 +290,11 @@ const handleCancel = () => {
 					<div class="row-2">
 						<div class="ticket">
 							<p class="title">Ticket</p>
-							<input type="text" v-model="ticket" />
+							<input type="text" v-model="queryParamsWorkingReport.ticket" />
 						</div>
 						<div class="task">
 							<p class="title">Task</p>
-							<select v-model="selected.task">
+							<select v-model="queryParamsWorkingReport.task">
 								<option v-for="item in taskOptions" :key="item" :value="item.value">
 									{{ item.text }}
 								</option>
@@ -286,11 +304,11 @@ const handleCancel = () => {
 					<div class="row-3">
 						<div class="time">
 							<p class="title">Time</p>
-							<input type="text" v-model="time" />
+							<input type="text" v-model="queryParamsWorkingReport.time" />
 						</div>
 						<div class="note">
 							<p class="title">Note</p>
-							<input type="text" v-model="note" />
+							<input type="text" v-model="queryParamsWorkingReport.note" />
 						</div>
 					</div>
 				</div>

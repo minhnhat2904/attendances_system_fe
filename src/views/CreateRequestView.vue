@@ -1,9 +1,8 @@
 <script setup>
-import { useUserStore } from '@/stores/user.js'
 import { reactive, ref } from 'vue'
-import http from '@/service/http.js'
+import { useCreateRequestStore } from '@/stores/createRequest.js'
 
-const user = useUserStore()
+const { createRequestOff } = useCreateRequestStore()
 
 const leave = reactive({
 	offDays: 0,
@@ -100,8 +99,11 @@ const handleSendRequest = async () => {
 		status: 0,
 		receiver: '',
 	}
-	const response = await http.post('/leave', data)
-	handleResetRequest()
+	const response = await createRequestOff(data)
+
+	if (response.data.status === true) {
+		handleResetRequest()
+	}
 }
 const handleResetRequest = () => {
 	leave.offDays = ''
@@ -116,7 +118,6 @@ const handleResetRequest = () => {
 	leave.reasonSelected = '00'
 	leave.reasonDetail = ''
 }
-
 </script>
 
 <template>
@@ -241,7 +242,7 @@ const handleResetRequest = () => {
 	</div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .request {
 	padding: 1rem 2rem;
 	&-header {

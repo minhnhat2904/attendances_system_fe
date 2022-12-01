@@ -2,17 +2,12 @@
 import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useAuthStore } from '@/stores/auth.js'
-import { useUserStore } from '@/stores/user.js'
-import Sidebar from '@/components/Sidebar.vue'
-const { getProfile } = useUserStore()
-const { userInfo } = storeToRefs(useUserStore())
+import SidebarAdmin from '@/components/SidebarAdmin.vue'
+const { logout } = storeToRefs(useAuthStore())
 
-const auth = useAuthStore()
-onMounted(async () => {
-	await getProfile()
-})
+onMounted(async () => {})
 const logoutFn = async () => {
-	await auth.logout()
+	await logout()
 }
 </script>
 
@@ -29,8 +24,8 @@ const logoutFn = async () => {
 			</router-link>
 			<div class="wrapper">
 				<nav class="d-flex text-white">
-					<span>{{ userInfo.username }}</span>
-					<span class="mx-1">|</span>
+					<!-- <span>{{ userInfo.username }}</span>
+					<span class="mx-1">|</span> -->
 					<span class="material-symbols-outlined icon-logout" @click="logoutFn">
 						logout
 					</span>
@@ -40,7 +35,7 @@ const logoutFn = async () => {
 
 		<main class="layout-default_main">
 			<div class="layout-default_navbar">
-				<Sidebar />
+				<SidebarAdmin />
 			</div>
 			<div class="layout-default_content">
 				<slot />

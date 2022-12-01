@@ -23,7 +23,7 @@ export const useWorkingReportStore = defineStore({
 		async createWorkingReport(params) {
 			const toast = useToast()
 			try {
-				const response = await http.post('/report', params)
+				const response = await http.post('/reports', params)
 				toast.success('Create working report successfully!', {
 					timeout: 2000,
 				})

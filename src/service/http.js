@@ -25,7 +25,6 @@ const handleErrorResponse = (error, reject) => {
 }
 
 const axiosInstance = axios.create({
-	// baseURL: 'http://localhost:8000/api',
 	baseURL: 'https://attendances-system-be.herokuapp.com/api',
 	timeout: 180000,
 	headers: {
