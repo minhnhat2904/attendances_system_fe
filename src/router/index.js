@@ -53,6 +53,19 @@ const router = createRouter({
 			meta: { layout: 'adminLayout' },
 			component: () => import('../views/admin/CreateQR.vue'),
 		},
+		// PM
+		{
+			path: '/projectManager/listMember',
+			name: 'listMember',
+			meta: { layout: 'projectManagerLayout' },
+			component: () => import('../views/projectManager/ListMember.vue'),
+		},
+		{
+			path: '/projectManager/confirmRequest',
+			name: 'confirmRequest',
+			meta: { layout: 'projectManagerLayout' },
+			component: () => import('../views/projectManager/ConfrimRequest.vue'),
+		},
 		// AUTH ROUTES
 		{
 			path: '/login',
@@ -75,6 +88,6 @@ const router = createRouter({
 	],
 })
 
-router.beforeEach(authMiddleware)
+// router.beforeEach(authMiddleware)
 
 export default router
