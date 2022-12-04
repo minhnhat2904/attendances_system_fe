@@ -1,5 +1,7 @@
 <script setup>
 import { reactive, ref, onMounted } from 'vue'
+import moment from 'moment'
+import { formatDay } from '../../helper/helper'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { useAttendanceStore } from '@/stores/attendances.js'
@@ -22,6 +24,8 @@ onMounted(async () => {
 	get()
 	await getProfile()
 	getWorkingReport(userInfo.value.id)
+
+	console.log(queryParamsWorkingReport.date)
 })
 
 const entrySelected = ref(25)
@@ -181,8 +185,12 @@ const handleCancel = () => {
 	isEditMode.value = false
 	clearInput()
 }
+const newDate = ref('')
 </script>
 <template>
+	{{ formatDay(newDate) }}
+
+	<input type="date" v-model="newDate" />
 	<div class="working-report-page">
 		<h3>Working time report</h3>
 		<details class="search-area">
