@@ -1,5 +1,8 @@
 <script setup>
 import { ref } from 'vue'
+const props = defineProps({
+	userInfo: Object,
+})
 
 const isExpanded = ref(true)
 const toggleMenu = () => {
@@ -19,8 +22,8 @@ const toggleMenu = () => {
 				</span>
 			</button>
 		</div>
-
-		<div class="side-bar_list">
+		<!-- Role employee -->
+		<div class="side-bar_list" v-if="userInfo.role === 'employee'">
 			<router-link class="side-bar-item" to="/">
 				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
 				<span class="title" v-if="isExpanded">Create Request off</span>
@@ -38,6 +41,35 @@ const toggleMenu = () => {
 					business_center
 				</span>
 				<span class="title" v-if="isExpanded">Working report</span>
+			</router-link>
+		</div>
+		<!-- Role Admin -->
+		<div class="side-bar_list" v-if="userInfo.role === 'admin'">
+			<router-link class="side-bar-item" to="/admin/">
+				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
+				<span class="title" v-if="isExpanded">User Management</span>
+			</router-link>
+			<router-link class="side-bar-item" to="/admin/createQr">
+				<span class="material-symbols-outlined side-bar-icon"> list_alt </span>
+				<span class="title" v-if="isExpanded">Create QR Code</span>
+			</router-link>
+		</div>
+		<!-- Role Accountancy -->
+		<div class="side-bar_list" v-if="userInfo.role === 'accountancy'">
+			<router-link class="side-bar-item" to="/accountant/">
+				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
+				<span class="title" v-if="isExpanded">User Info</span>
+			</router-link>
+		</div>
+		<!-- Role Head Department -->
+		<div class="side-bar_list" v-if="userInfo.role === 'head_department'">
+			<router-link class="side-bar-item" to="/headDepartment/">
+				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
+				<span class="title" v-if="isExpanded">History equest</span>
+			</router-link>
+			<router-link class="side-bar-item" to="/headDepartment/confirmRequest">
+				<span class="material-symbols-outlined side-bar-icon"> list_alt </span>
+				<span class="title" v-if="isExpanded">Confirm request</span>
 			</router-link>
 		</div>
 	</div>

@@ -4,8 +4,6 @@ import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import DefaultLayout from '@/layouts/defaultLayout.vue'
 import AuthLayout from '@/layouts/authLayout.vue'
-import AdminLayout from '@/layouts/adminLayout.vue'
-import projectManagerLayout from '@/layouts/projectManagerLayout.vue'
 
 const { getAuthenticate } = useAuthStore()
 
@@ -16,10 +14,6 @@ const currentLayout = computed(() => {
 			return DefaultLayout
 		case 'authLayout':
 			return AuthLayout
-		case 'adminLayout':
-			return AdminLayout
-		case 'projectManagerLayout':
-			return projectManagerLayout
 		default:
 			return DefaultLayout
 	}

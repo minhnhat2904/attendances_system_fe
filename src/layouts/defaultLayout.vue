@@ -1,15 +1,15 @@
 <script setup>
-import { onMounted } from 'vue'
-import { storeToRefs } from 'pinia'
+import { onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
-import { useUserStore } from '@/stores/user.js'
+import jwtDecode from 'jwt-decode'
 import Sidebar from '@/components/Sidebar.vue'
-const { getProfile } = useUserStore()
-const { userInfo } = storeToRefs(useUserStore())
-
+const userInfo = ref({})
 const auth = useAuthStore()
 onMounted(async () => {
-	await getProfile()
+	if (localStorage.getItem('token')) {
+		const token = localStorage.getItem('token')
+		userInfo.value = jwtDecode(token)
+	}
 })
 const logoutFn = async () => {
 	await auth.logout()
@@ -40,7 +40,7 @@ const logoutFn = async () => {
 
 		<main class="layout-default_main">
 			<div class="layout-default_navbar">
-				<Sidebar />
+				<Sidebar :userInfo="userInfo" />
 			</div>
 			<div class="layout-default_content">
 				<slot />
