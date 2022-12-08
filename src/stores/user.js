@@ -9,6 +9,7 @@ export const useUserStore = defineStore({
 		return {
 			email: null,
 			userInfo: {},
+			remainHours: 0
 		}
 	},
 
@@ -33,6 +34,15 @@ export const useUserStore = defineStore({
 			try {
 				const response = await http.get('/auth/profile')
 				this.userInfo = response.data.data
+			} catch (error) {
+				console.log(error)
+			}
+		},
+
+		async getRemainHours() {
+			try {
+				const response = await http.get('/auth/profile')
+				this.remainHours = response.data.data.remainHours
 			} catch (error) {
 				console.log(error)
 			}

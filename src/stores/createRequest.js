@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import http from '@/service/http.js'
 import { useToast } from 'vue-toastification'
+import moment from 'moment'
 
 export const useCreateRequestStore = defineStore({
 	id: 'createRequest',
@@ -11,10 +12,20 @@ export const useCreateRequestStore = defineStore({
 		}
 	},
 
+	getters: {
+		getRequestResultList() {
+			this.requestResultList.map((request) => {
+				request.createdAt = moment(request.createdAt).format('DD/MM/YYYY hh:mm')
+				return request
+			})
+			return this.requestResultList
+		}
+	},
+
 	actions: {
 		async fetchRequestResult(userId) {
 			try {
-				const response = await http.get(`/leaves?userId=${userId}`)
+				const response = await http.get(`/leaves?userId=${userId}&startDate=&endDate=&status=0`)
 				this.requestResultList = response.data.data
 			} catch (error) {
 				console.log(error)

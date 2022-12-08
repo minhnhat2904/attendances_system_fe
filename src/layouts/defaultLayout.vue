@@ -1,14 +1,20 @@
 <script setup>
+import { storeToRefs } from 'pinia'
 import { onMounted, ref } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
+import { useUserStore } from '@/stores/user.js'
 import jwtDecode from 'jwt-decode'
 import Sidebar from '@/components/Sidebar.vue'
+const { getRemainHours } = useUserStore();
+
 const userInfo = ref({})
 const auth = useAuthStore()
+const { remainHours } = storeToRefs(useUserStore());
 onMounted(async () => {
 	if (localStorage.getItem('token')) {
 		const token = localStorage.getItem('token')
 		userInfo.value = jwtDecode(token)
+		getRemainHours();
 	}
 })
 const logoutFn = async () => {
@@ -47,10 +53,10 @@ const logoutFn = async () => {
 			</div>
 		</main>
 
-		<footer class="layout-default_footer">
+		<!-- <footer class="layout-default_footer">
 			<p>© Copyright 2022</p>
 			<p>Attendance System Project (2022)</p>
-		</footer>
+		</footer> -->
 	</div>
 </template>
 
@@ -79,7 +85,8 @@ const logoutFn = async () => {
 
 	&_main {
 		display: flex;
-		height: calc(100vh - 140px);
+		// height: calc(100vh - 140px);
+		height: 100%;
 
 		.layout-default_content {
 			width: 100%;

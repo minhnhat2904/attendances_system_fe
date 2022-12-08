@@ -7,7 +7,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useAttendanceStore } from '@/stores/attendances.js'
 import { useWorkingReportStore } from '@/stores/workingReport.js'
 
-const { get } = useAttendanceStore()
+// const { get } = useAttendanceStore()
 const { getProfile } = useUserStore()
 const {
 	createWorkingReport,
@@ -21,7 +21,6 @@ const { workingReport } = storeToRefs(useWorkingReportStore())
 const { userInfo } = storeToRefs(useUserStore())
 
 onMounted(async () => {
-	get()
 	await getProfile()
 	getWorkingReport(userInfo.value.id)
 
@@ -35,7 +34,7 @@ const isEditMode = ref(false)
 const queryParamsWorkingReport = reactive({
 	time: '',
 	note: '',
-	date: '',
+	date: new Date().toISOString().slice(0,10),
 	ticket: '',
 	workingreportId: '',
 	project: '1',
@@ -188,9 +187,6 @@ const handleCancel = () => {
 const newDate = ref('')
 </script>
 <template>
-	{{ formatDay(newDate) }}
-
-	<input type="date" v-model="newDate" />
 	<div class="working-report-page">
 		<h3>Working time report</h3>
 		<details class="search-area">
@@ -204,17 +200,7 @@ const newDate = ref('')
 				<p><b>To</b></p>
 				<input type="date" class="search-area-input" />
 			</div>
-			<div class="search-status">
-				<p><b>Status</b></p>
-				<select name="requestType" id="requestTypeId" v-model="typeRequest">
-					<option
-						v-for="(type, index) in requestTypes"
-						:key="index"
-						:value="type.value">
-						{{ type.text }}
-					</option>
-				</select>
-			</div>
+			
 			<div class="action">
 				<button class="action-search" @click="handleSearch">Search</button>
 				<button class="action-reset" @click="handleReset">Reset</button>

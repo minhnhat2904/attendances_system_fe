@@ -19,7 +19,6 @@ export const useApi = (endpoint = 'api') => {
 
 	const axiosInstance = axios.create({
 		baseURL,
-		withCredentials: true,
 	})
 
 	// axiosInstance.interceptors.response.use(resp => resp, middleware401)

@@ -1,14 +1,26 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
+import { useUserStore } from '@/stores/user.js'
+import { hoursToDaysAndHours } from '@/helper/helper.js'
+
+const { getRemainHours } = useUserStore();
+const { remainHours } = storeToRefs(useUserStore());
 
 const { createRequestOff } = useCreateRequestStore()
 
+onMounted(async () => {
+	if (localStorage.getItem('token')) {
+		getRemainHours();
+	}
+})
+
 const leave = reactive({
 	offDays: 0,
-	offHours: '4.5',
-	periodFrom: '',
-	periodTo: '',
+	offHours: 0,
+	periodFrom: new Date().toISOString().slice(0,10),
+	periodTo: new Date().toISOString().slice(0,10),
 	typeOffSelected: 1,
 	hourFromSelected: '08',
 	minuteFromSelected: '00',
@@ -19,22 +31,22 @@ const leave = reactive({
 })
 
 const hoursOfLeave = reactive([
-	{ text: 0, value: '0' },
-	{ text: 0.5, value: '0.5' },
-	{ text: 1, value: '1' },
-	{ text: 1.5, value: '1.5' },
-	{ text: 2, value: '2' },
-	{ text: 2.5, value: '2.5' },
-	{ text: 3, value: '3' },
-	{ text: 3.5, value: '3.5' },
-	{ text: 4, value: '4' },
-	{ text: 4.5, value: '4.5' },
-	{ text: 5, value: '5' },
-	{ text: 5.5, value: '5.5' },
-	{ text: 6, value: '6' },
-	{ text: 6.5, value: '6.5' },
-	{ text: 7, value: '7' },
-	{ text: 7.5, value: '7.5' },
+	{ text: '0', value: 0 },
+	{ text: '0.5', value: 0.5 },
+	{ text: '1', value: 1 },
+	{ text: '1.5', value: 1.5 },
+	{ text: '2', value: 2 },
+	{ text: '2.5', value: 2.5 },
+	{ text: '3', value: 3 },
+	{ text: '3.5', value: 3.5 },
+	{ text: '4', value: 4 },
+	{ text: '4.5', value: 4.5 },
+	{ text: '5', value: 5 },
+	{ text: '5.5', value: 5.5 },
+	{ text: '6', value: 6 },
+	{ text: '6.5', value: 6.5 },
+	{ text: '7', value: 7 },
+	{ text: '7.5', value: 7.5 },
 ])
 
 const hourOptions = reactive([
@@ -64,18 +76,20 @@ const minuteOptions = reactive([
 	{ text: '55', value: '55' },
 ])
 const typeOff = reactive([
-	{ text: 'Annual leave', value: 1 },
-	{ text: 'Unpaid leave', value: 2 },
-	{ text: 'Paid personal leave', value: 3 },
-	{ text: 'Insurance Leave', value: 4 },
+	{ text: 'Annual leave', value: 'Annual leave' },
+	{ text: 'Unpaid leave', value: 'Unpaid leave' },
+	{ text: 'Paid personal leave', value: 'Paid personal leave' },
+	{ text: 'Insurance Leave', value: 'Insurance Leave' },
 ])
 const reasonOff = reactive([
-	{ text: 'Sick', value: 5 },
-	{ text: 'Vacation', value: 6 },
-	{ text: 'Personal Reason', value: 7 },
-	{ text: 'Other Reason', value: 8 },
+	{ text: 'Sick', value: 'Sick' },
+	{ text: 'Vacation', value: 'Vacation' },
+	{ text: 'Personal Reason', value: 'Personal Reason' },
+	{ text: 'Other Reason', value: 'Other Reason' },
 ])
-const dateTime = ref('3 days and 3 hours')
+const dateTime = computed(() => {
+	return hoursToDaysAndHours(remainHours.value);
+})
 
 const handleSendRequest = async () => {
 	const data = {
@@ -85,31 +99,34 @@ const handleSendRequest = async () => {
 			leave.hourFromSelected +
 			':' +
 			leave.minuteFromSelected +
-			'00',
+			':00',
 		endDate:
 			leave.periodTo +
 			' ' +
 			leave.hourToSelected +
 			':' +
 			leave.minuteToSelected +
-			'00',
+			':00',
+		amountDay: leave.offDays,
+		amountHour: leave.offHours,
 		typeOff: leave.typeOffSelected,
 		reason: leave.reasonSelected,
 		reasonDetail: leave.reasonDetail,
 		status: 0,
-		receiver: '',
+		receiver: 'Dept1',
 	}
 	const response = await createRequestOff(data)
 
 	if (response.data.status === true) {
+		getRemainHours()
 		handleResetRequest()
 	}
 }
 const handleResetRequest = () => {
 	leave.offDays = ''
 	leave.offHours = ''
-	leave.periodFrom = new Date(null)
-	leave.periodTo = new Date(null)
+	leave.periodFrom = new Date().toISOString().slice(0,10),
+	leave.periodTo = new Date().toISOString().slice(0,10),
 	leave.typeOffSelected = 1
 	leave.hourFromSelected = '08'
 	leave.minuteFromSelected = '00'
@@ -231,8 +248,6 @@ const handleResetRequest = () => {
 				<span><b>Reason details</b></span>
 				<input type="textarea" v-model="leave.reasonDetail" />
 			</div>
-
-			<div class="receiver"></div>
 
 			<div class="action">
 				<button class="send-request" @click="handleSendRequest">Send</button>

@@ -27,6 +27,7 @@ export const useWorkingReportStore = defineStore({
 				toast.success('Create working report successfully!', {
 					timeout: 2000,
 				})
+				this.workingReport.push(response.data.data);
 				return response
 			} catch (error) {
 				toast.error('Create working report failed!', {

@@ -42,7 +42,7 @@ const credentials = reactive({
 
 const handleLogin = async () => {
 	await loginAdmin(credentials)
-	router.push('/admin/userManager')
+	router.push('/admin')
 }
 </script>
 

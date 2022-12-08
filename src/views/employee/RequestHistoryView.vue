@@ -1,16 +1,20 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
+import { computed, onMounted, reactive, ref } from 'vue'
+import { hoursToDaysAndHours } from '@/helper/helper.js'
+
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
-const { userInfo } = storeToRefs(useUserStore())
-const { requestResultList } = storeToRefs(useCreateRequestStore())
+const { getRequestResultList } = storeToRefs(useCreateRequestStore())
+const { getRemainHours } = useUserStore();
+const { remainHours, userInfo } = storeToRefs(useUserStore());
 
 onMounted(async () => {
 	await getProfile()
 	fetchRequestResult(userInfo.value.id)
+	getRemainHours();
 })
 
 const checkbox = ref('')
@@ -78,7 +82,9 @@ const fields = [
 	},
 ]
 
-const dateTime = ref('3 days and 3 hours')
+const dateTime = computed(() => {
+	return hoursToDaysAndHours(remainHours.value);
+})
 
 const handleSearch = () => {
 	console.log('search')
@@ -154,7 +160,7 @@ const handleReset = () => {
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in requestResultList" :key="item">
+				<tr v-for="item in getRequestResultList" :key="item">
 					<td v-for="field in fields" :key="field">
 						<span v-if="field.type === 'select'">
 							<input type="checkbox" v-model="checkbox" />

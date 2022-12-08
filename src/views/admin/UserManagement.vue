@@ -4,12 +4,13 @@ import { reactive, ref, onMounted } from 'vue'
 onMounted(async () => {})
 const isEditing = ref(false)
 const data = reactive({
-	userName: '',
+	username: '',
 	name: '',
 	password: '',
 	phoneNumber: '',
 	address: '',
 	role: 1,
+	department: ''
 })
 
 const roleList = reactive([
@@ -40,7 +41,7 @@ const headers = reactive([
 	{
 		type: 'string',
 		text: 'User name',
-		key: 'userName',
+		key: 'username',
 	},
 	{
 		type: 'string',
@@ -66,7 +67,7 @@ const headers = reactive([
 const listTable = reactive([
 	{
 		id: 1,
-		userName: 'user1',
+		username: 'user1',
 		name: 'name1',
 		phoneNumber: '123',
 		address: 'abc',
@@ -74,7 +75,7 @@ const listTable = reactive([
 	},
 	{
 		id: 2,
-		userName: 'user2',
+		username: 'user2',
 		name: 'name2',
 		phoneNumber: '123',
 		address: 'ab2',
@@ -82,7 +83,7 @@ const listTable = reactive([
 	},
 	{
 		id: 3,
-		userName: 'user3',
+		username: 'user3',
 		name: 'name3',
 		phoneNumber: '123',
 		address: 'abc',
@@ -91,12 +92,13 @@ const listTable = reactive([
 ])
 const handleCreateUser = async () => {
 	const requestBody = {
-		userName: data.userName,
+		username: data.username,
 		name: data.name,
 		password: data.password,
 		phoneNumber: data.phoneNumber,
 		address: data.address,
 		role: data.role,
+		department: data.department
 	}
 
 	const response = await createUser()
@@ -107,7 +109,7 @@ const handleCreateUser = async () => {
 
 const handleUpdateUser = async () => {
 	const requestBody = {
-		userName: data.userName,
+		username: data.username,
 		name: data.name,
 		password: data.password,
 		phoneNumber: data.phoneNumber,
@@ -123,7 +125,7 @@ const handleUpdateUser = async () => {
 }
 
 const handleEdit = item => {
-	data.userName = item.userName
+	data.username = item.username
 	data.name = item.name
 	data.password = item.password
 	data.phoneNumber = item.phoneNumber
@@ -140,7 +142,7 @@ const handleDelete = async id => {
 }
 
 const handleResetInput = () => {
-	data.userName = ''
+	data.username = ''
 	data.name = ''
 	data.password = ''
 	data.phoneNumber = ''
@@ -157,7 +159,7 @@ const handleResetInput = () => {
 				<div class="d-flex gap-3">
 					<div>
 						<p>User name</p>
-						<input type="text" v-model="data.userName" />
+						<input type="text" v-model="data.username" />
 					</div>
 					<div>
 						<p>Password</p>
