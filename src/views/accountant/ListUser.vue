@@ -1,5 +1,5 @@
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive, ref } from 'vue'
 
 const headers = reactive([
 	{
@@ -104,6 +104,26 @@ const tableData = reactive([
 		workingHours: '180',
 	},
 ])
+
+const currentSort = ref('createdAt')
+const currentSortDir = ref('desc')
+
+const sortTable = header => {
+	if (header === currentSort.value) {
+		currentSortDir.value = currentSortDir.value === 'asc' ? 'desc' : 'asc'
+	}
+	currentSort.value = header
+}
+
+const sortedList = computed(() => {
+	return tableData.sort((a, b) => {
+		let modifier = 1
+		if (currentSortDir.value === 'desc') modifier = -1
+		if (a[currentSort.value] < b[currentSort.value]) return -1 * modifier
+		if (a[currentSort.value] > b[currentSort.value]) return 1 * modifier
+		return 0
+	})
+})
 </script>
 
 <template>
@@ -114,13 +134,14 @@ const tableData = reactive([
 					<th
 						v-for="header in headers"
 						:key="header"
+						@click="sortTable(header.key)"
 						class="header-title text-center">
 						{{ header.text }}
 					</th>
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in tableData" :key="item">
+				<tr v-for="item in sortedList" :key="item">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
 					</td>

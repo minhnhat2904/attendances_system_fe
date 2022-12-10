@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 
 onMounted(async () => {})
 const isEditing = ref(false)
@@ -10,7 +10,7 @@ const data = reactive({
 	phoneNumber: '',
 	address: '',
 	role: 1,
-	department: ''
+	department: '',
 })
 
 const roleList = reactive([
@@ -98,7 +98,7 @@ const handleCreateUser = async () => {
 		phoneNumber: data.phoneNumber,
 		address: data.address,
 		role: data.role,
-		department: data.department
+		department: data.department,
 	}
 
 	const response = await createUser()
@@ -149,6 +149,26 @@ const handleResetInput = () => {
 	data.address = ''
 	data.role = ''
 }
+
+const currentSort = ref('createdAt')
+const currentSortDir = ref('desc')
+
+const sortTable = header => {
+	if (header === currentSort.value) {
+		currentSortDir.value = currentSortDir.value === 'asc' ? 'desc' : 'asc'
+	}
+	currentSort.value = header
+}
+
+const sortedList = computed(() => {
+	return listTable.sort((a, b) => {
+		let modifier = 1
+		if (currentSortDir.value === 'desc') modifier = -1
+		if (a[currentSort.value] < b[currentSort.value]) return -1 * modifier
+		if (a[currentSort.value] > b[currentSort.value]) return 1 * modifier
+		return 0
+	})
+})
 </script>
 <template>
 	<div class="user-manager p-4">
@@ -212,11 +232,15 @@ const handleResetInput = () => {
 		<div>
 			<table class="table-user mt-5">
 				<tr>
-					<th v-for="header in headers" :key="header" class="header-title py-1 px-2">
+					<th
+						v-for="header in headers"
+						@click="sortTable(header.key)"
+						:key="header"
+						class="header-title py-1 px-2">
 						{{ header.text }}
 					</th>
 				</tr>
-				<tr v-for="item in listTable" :key="item" class="table-body py-1 px-2">
+				<tr v-for="item in sortedList" :key="item" class="table-body py-1 px-2">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
 						<p v-if="header.type === 'action'">
@@ -262,7 +286,9 @@ const handleResetInput = () => {
 				border-style: solid none solid solid;
 				border-width: 1px 0px 1px 1px;
 
-				&:nth-child(5), &:nth-child(4),&:nth-child(3) {
+				&:nth-child(5),
+				&:nth-child(4),
+				&:nth-child(3) {
 					border-left: 0.5px solid #337ab7;
 				}
 				&:nth-child(6) {

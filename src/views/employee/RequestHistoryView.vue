@@ -1,5 +1,6 @@
 <script setup>
 import { storeToRefs } from 'pinia'
+import { formatDay } from '../../helper/helper'
 import { useUserStore } from '@/stores/user.js'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { computed, onMounted, reactive, ref } from 'vue'
@@ -8,14 +9,16 @@ import { hoursToDaysAndHours } from '@/helper/helper.js'
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
 const { getRequestResultList } = storeToRefs(useCreateRequestStore())
-const { getRemainHours } = useUserStore();
-const { remainHours, userInfo } = storeToRefs(useUserStore());
+const { getRemainHours } = useUserStore()
+const { remainHours, userInfo } = storeToRefs(useUserStore())
 
 onMounted(async () => {
 	await getProfile()
 	fetchRequestResult(userInfo.value.id)
-	getRemainHours();
+	getRemainHours()
 })
+const currentSort = ref('createdAt')
+const currentSortDir = ref('desc')
 
 const checkbox = ref('')
 const entrySelected = ref(25)
@@ -34,24 +37,24 @@ const requestTypes = reactive([
 	{ text: 'Waiting', value: 5 },
 ])
 
-const fields = [
+const headers = [
 	{
 		type: 'select',
 		value: '',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'Created',
 		key: 'createdAt',
 		id: '',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'From',
 		key: 'startDate',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'To',
 		key: 'endDate',
 	},
@@ -71,7 +74,7 @@ const fields = [
 		key: 'reason',
 	},
 	{
-		type: 'string',
+		type: 'Status',
 		value: 'Status',
 		key: 'status',
 	},
@@ -83,7 +86,7 @@ const fields = [
 ]
 
 const dateTime = computed(() => {
-	return hoursToDaysAndHours(remainHours.value);
+	return hoursToDaysAndHours(remainHours.value)
 })
 
 const handleSearch = () => {
@@ -93,12 +96,29 @@ const handleSearch = () => {
 const handleReset = () => {
 	console.log('reset')
 }
+
+const sortTable = header => {
+	if (header === currentSort.value) {
+		currentSortDir.value = currentSortDir.value === 'asc' ? 'desc' : 'asc'
+	}
+	currentSort.value = header
+}
+
+const sortedList = computed(() => {
+	return getRequestResultList.value.sort((a, b) => {
+		let modifier = 1
+		if (currentSortDir.value === 'desc') modifier = -1
+		if (a[currentSort.value] < b[currentSort.value]) return -1 * modifier
+		if (a[currentSort.value] > b[currentSort.value]) return 1 * modifier
+		return 0
+	})
+})
 </script>
 <template>
 	<div class="request-history-page">
 		<div class="request-history-header">
-			<h2 class="request-history-title">Request History</h2>
-			<span class="request-history-desc">
+			<h3 class="request-history-title"><b>Request History</b></h3>
+			<span>
 				You have <b>{{ dateTime }}</b> of leave
 			</span>
 		</div>
@@ -151,26 +171,40 @@ const handleReset = () => {
 			<thead>
 				<tr>
 					<th
-						v-for="field in fields"
-						:key="field"
-						@click="sortTable(field)"
+						v-for="header in headers"
+						:key="header"
+						@click="sortTable(header.key)"
 						class="header-title">
-						{{ field.value }}
+						{{ header.value }}
 					</th>
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in getRequestResultList" :key="item">
-					<td v-for="field in fields" :key="field">
-						<span v-if="field.type === 'select'">
+				<tr v-for="item in sortedList" :key="item">
+					<td v-for="header in headers" :key="header">
+						<span v-if="header.type === 'select'">
 							<input type="checkbox" v-model="checkbox" />
 						</span>
-						<span v-if="field.type === 'string'">{{ item[field.key] }}</span>
-						<span v-if="field.key === 'timeOff'">
+						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
+						<span v-if="header.key === 'timeOff'">
 							{{
 								!item.amountDay
 									? '0d 0h'
 									: item.amountDay + 'd' + ' ' + item.amountHour + 'h'
+							}}
+						</span>
+						<span v-if="header.type === 'dateTime'">
+							{{ formatDay(item[header.key]) }}
+						</span>
+						<span v-if="header.type === 'Status'">
+							{{
+								item[header.key] === 0
+									? 'Not approved yet'
+									: item[header.key] === 1
+									? 'Approved'
+									: item[header.key] === 2
+									? 'Does not accept'
+									: 'Unknown'
 							}}
 						</span>
 					</td>
@@ -182,16 +216,6 @@ const handleReset = () => {
 <style lang="scss" scoped>
 .request-history-page {
 	padding: 1rem 2rem;
-	&-header {
-		&-title {
-			font-weight: 600;
-		}
-
-		&-desc {
-			font-size: 1.2rem;
-		}
-	}
-
 	.search-area {
 		.search-to,
 		.search-status,
@@ -269,6 +293,7 @@ const handleReset = () => {
 			font-weight: bold;
 			color: white;
 			background: #337ab7;
+			cursor: pointer;
 		}
 
 		&-body {

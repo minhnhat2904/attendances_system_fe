@@ -1,6 +1,5 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
-import moment from 'moment'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { formatDay } from '../../helper/helper'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
@@ -23,8 +22,6 @@ const { userInfo } = storeToRefs(useUserStore())
 onMounted(async () => {
 	await getProfile()
 	getWorkingReport(userInfo.value.id)
-
-	console.log(queryParamsWorkingReport.date)
 })
 
 const entrySelected = ref(25)
@@ -34,11 +31,11 @@ const isEditMode = ref(false)
 const queryParamsWorkingReport = reactive({
 	time: '',
 	note: '',
-	date: new Date().toISOString().slice(0,10),
+	date: new Date().toISOString().slice(0, 10),
 	ticket: '',
 	workingreportId: '',
-	project: '1',
-	task: '1',
+	project: '',
+	task: '',
 })
 
 const entryOptions = reactive([
@@ -47,7 +44,7 @@ const entryOptions = reactive([
 	{ text: 50, value: '50' },
 	{ text: 100, value: '100' },
 ])
-const fields = [
+const headers = [
 	{
 		type: 'string',
 		value: 'Report date',
@@ -57,7 +54,7 @@ const fields = [
 	{
 		type: 'string',
 		value: 'Employee',
-		key: 'userId',
+		key: 'updatedBy',
 	},
 	{
 		type: 'string',
@@ -184,11 +181,30 @@ const handleCancel = () => {
 	isEditMode.value = false
 	clearInput()
 }
-const newDate = ref('')
+
+const currentSort = ref('createdAt')
+const currentSortDir = ref('desc')
+
+const sortTable = header => {
+	if (header === currentSort.value) {
+		currentSortDir.value = currentSortDir.value === 'asc' ? 'desc' : 'asc'
+	}
+	currentSort.value = header
+}
+
+const sortedList = computed(() => {
+	return workingReport.value.sort((a, b) => {
+		let modifier = 1
+		if (currentSortDir.value === 'desc') modifier = -1
+		if (a[currentSort.value] < b[currentSort.value]) return -1 * modifier
+		if (a[currentSort.value] > b[currentSort.value]) return 1 * modifier
+		return 0
+	})
+})
 </script>
 <template>
 	<div class="working-report-page">
-		<h3>Working time report</h3>
+		<h3><b>Working time report</b></h3>
 		<details class="search-area">
 			<summary class="search-area-toggle">Search area </summary>
 
@@ -200,7 +216,7 @@ const newDate = ref('')
 				<p><b>To</b></p>
 				<input type="date" class="search-area-input" />
 			</div>
-			
+
 			<div class="action">
 				<button class="action-search" @click="handleSearch">Search</button>
 				<button class="action-reset" @click="handleReset">Reset</button>
@@ -218,7 +234,7 @@ const newDate = ref('')
 				<option
 					v-for="(entry, index) in entryOptions"
 					:key="index"
-					:value="entry.value">
+					:value="entry.text">
 					{{ entry.text }}
 				</option>
 			</select>
@@ -227,16 +243,26 @@ const newDate = ref('')
 		<table id="tableComponent" class="table table-bordered table-striped">
 			<thead>
 				<tr>
-					<th v-for="field in fields" :key="field" class="header-title">
-						{{ field.value }}
+					<th
+						v-for="header in headers"
+						:key="header"
+						@click="sortTable(header.key)"
+						class="header-title">
+						{{ header.value }}
 					</th>
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in workingReport" :key="item">
-					<td v-for="field in fields" :key="field">
-						<span v-if="field.type === 'string'">{{ item[field.key] }}</span>
-						<span v-if="field.type === 'action'">
+				<tr v-for="item in sortedList" :key="item">
+					<td v-for="header in headers" :key="header">
+						<span v-if="header.type === 'string'">
+							{{
+								header.key === 'date'
+									? formatDay(item[header.key])
+									: item[header.key]
+							}}
+						</span>
+						<span v-if="header.type === 'action'">
 							<span
 								class="material-symbols-outlined btn-edit"
 								@click="handleShowModalEdit(item)">
@@ -275,7 +301,7 @@ const newDate = ref('')
 								<option
 									v-for="item in projectOptions"
 									:key="item"
-									:value="item.value">
+									:value="item.text">
 									{{ item.text }}
 								</option>
 							</select>
@@ -289,7 +315,7 @@ const newDate = ref('')
 						<div class="task">
 							<p class="title">Task</p>
 							<select v-model="queryParamsWorkingReport.task">
-								<option v-for="item in taskOptions" :key="item" :value="item.value">
+								<option v-for="item in taskOptions" :key="item" :value="item.text">
 									{{ item.text }}
 								</option>
 							</select>
@@ -425,6 +451,7 @@ const newDate = ref('')
 			font-weight: bold;
 			color: white;
 			background: #337ab7;
+			cursor: pointer;
 		}
 
 		&-body {

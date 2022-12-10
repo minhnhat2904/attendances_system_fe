@@ -5,22 +5,22 @@ import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { useUserStore } from '@/stores/user.js'
 import { hoursToDaysAndHours } from '@/helper/helper.js'
 
-const { getRemainHours } = useUserStore();
-const { remainHours } = storeToRefs(useUserStore());
+const { getRemainHours } = useUserStore()
+const { remainHours } = storeToRefs(useUserStore())
 
 const { createRequestOff } = useCreateRequestStore()
 
 onMounted(async () => {
 	if (localStorage.getItem('token')) {
-		getRemainHours();
+		getRemainHours()
 	}
 })
 
 const leave = reactive({
 	offDays: 0,
 	offHours: 0,
-	periodFrom: new Date().toISOString().slice(0,10),
-	periodTo: new Date().toISOString().slice(0,10),
+	periodFrom: new Date().toISOString().slice(0, 10),
+	periodTo: new Date().toISOString().slice(0, 10),
 	typeOffSelected: 1,
 	hourFromSelected: '08',
 	minuteFromSelected: '00',
@@ -88,7 +88,7 @@ const reasonOff = reactive([
 	{ text: 'Other Reason', value: 'Other Reason' },
 ])
 const dateTime = computed(() => {
-	return hoursToDaysAndHours(remainHours.value);
+	return hoursToDaysAndHours(remainHours.value)
 })
 
 const handleSendRequest = async () => {
@@ -125,9 +125,9 @@ const handleSendRequest = async () => {
 const handleResetRequest = () => {
 	leave.offDays = ''
 	leave.offHours = ''
-	leave.periodFrom = new Date().toISOString().slice(0,10),
-	leave.periodTo = new Date().toISOString().slice(0,10),
-	leave.typeOffSelected = 1
+	;(leave.periodFrom = new Date().toISOString().slice(0, 10)),
+		(leave.periodTo = new Date().toISOString().slice(0, 10)),
+		(leave.typeOffSelected = 1)
 	leave.hourFromSelected = '08'
 	leave.minuteFromSelected = '00'
 	leave.hourToSelected = '17'
@@ -140,7 +140,7 @@ const handleResetRequest = () => {
 <template>
 	<div class="request">
 		<div class="request-header">
-			<h2 class="request-header-title">Create request</h2>
+			<h3 class="request-header-title"><b>Create request</b></h3>
 			<span class="request-header-desc">
 				You have <b>{{ dateTime }}</b> of leave
 			</span>
@@ -249,9 +249,16 @@ const handleResetRequest = () => {
 				<input type="textarea" v-model="leave.reasonDetail" />
 			</div>
 
-			<div class="action">
-				<button class="send-request" @click="handleSendRequest">Send</button>
-				<button class="reset-request" @click="handleResetRequest">Reset</button>
+			<div class="action mt-3">
+				<button class="btn btn-success send-request" @click="handleSendRequest">
+					Create
+				</button>
+				<button
+					type="button"
+					class="reset-request btn btn-primary"
+					@click="handleResetRequest"
+					>Reset</button
+				>
 			</div>
 		</div>
 	</div>
@@ -261,13 +268,7 @@ const handleResetRequest = () => {
 .request {
 	padding: 1rem 2rem;
 	&-header {
-		&-title {
-			font-weight: 600;
-		}
 
-		&-desc {
-			font-size: 1.2rem;
-		}
 	}
 
 	.time-off {
@@ -320,21 +321,11 @@ const handleResetRequest = () => {
 	.send-request,
 	.reset-request {
 		width: 100px;
-		height: 35px;
 		border: none;
 		padding: 5px;
 		margin-right: 10px;
-		background: #337ab7;
 		color: white;
 		font-weight: 500;
-
-		&:hover {
-			background: #104b80;
-		}
-
-		&:active {
-			background: #053660;
-		}
 	}
 
 	input,

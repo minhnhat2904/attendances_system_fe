@@ -53,10 +53,10 @@ const logoutFn = async () => {
 			</div>
 		</main>
 
-		<!-- <footer class="layout-default_footer">
+		<footer class="layout-default_footer">
 			<p>© Copyright 2022</p>
 			<p>Attendance System Project (2022)</p>
-		</footer> -->
+		</footer>
 	</div>
 </template>
 
