@@ -9,12 +9,23 @@ export const useAdminStore = defineStore({
 		return {
 			listUser: [],
 			qr: {},
+			departments: []
 		}
 	},
 	actions: {
-		async fetchUser() {
+		async fetchDeparments() {
 			try {
-				const response = await http.get('')
+				const response = await http.get('/departments')
+				this.departments = response.data.data;
+				return response.data.data
+			} catch (error) {
+				console.log(error)
+			}
+		},
+		async fetchUser(params) {
+			try {
+				const response = await http.get('/users', {department: params})
+				this.listUser = response.data.data;
 				return response
 			} catch (error) {
 				console.log(error)
@@ -24,7 +35,7 @@ export const useAdminStore = defineStore({
 			const toast = useToast()
 
 			try {
-				const response = await http.post('', params)
+				const response = await http.post('/users', params)
 				if (response.data.status === true) {
 					toast.success('Create user success!', {
 						timeout: 2000,
@@ -38,11 +49,28 @@ export const useAdminStore = defineStore({
 				console.log(error)
 			}
 		},
+		async createUserByUpload(params) {
+			const toast = useToast()
+			try {
+				const response = await http.post('/users/file', params)
+				if (response.data.status === true) {
+					toast.success('Create user success!', {
+						timeout: 2000,
+					})
+				}
+				return response
+			} catch (error) {
+				toast.error('Create user failed!', {
+					timeout: 2000,
+				})
+				console.log(error)
+			}
+		},
 		async updateUser(params, id) {
 			const toast = useToast()
 
 			try {
-				const response = await http.put(`${id}`, params)
+				const response = await http.put(`/users/${id}`, params)
 				if (response.data.status === true) {
 					toast.success('Update user success!', {
 						timeout: 2000,
@@ -50,7 +78,7 @@ export const useAdminStore = defineStore({
 				}
 				return response
 			} catch (error) {
-				toast.error('Update user failse!', {
+				toast.error('Update user failed!', {
 					timeout: 2000,
 				})
 				console.log(error)
@@ -60,7 +88,7 @@ export const useAdminStore = defineStore({
 			const toast = useToast()
 
 			try {
-				const response = await http.delete('', id)
+				const response = await http.delete('/users', id)
 				if (response.data.status === true) {
 					toast.success('Delete user success!', {
 						timeout: 2000,
@@ -68,7 +96,7 @@ export const useAdminStore = defineStore({
 				}
 				return response
 			} catch (error) {
-				toast.error('Delete user failse!', {
+				toast.error('Delete user failed!', {
 					timeout: 2000,
 				})
 				console.log(error)
@@ -87,7 +115,7 @@ export const useAdminStore = defineStore({
 				}
 				return this.qr
 			} catch (error) {
-				toast.error('Create QR failse!', {
+				toast.error('Create QR failed!', {
 					timeout: 2000,
 				})
 				console.log(error)

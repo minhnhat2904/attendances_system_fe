@@ -1,34 +1,61 @@
 <script setup>
-import { reactive, ref, onMounted, computed } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useAdminStore } from '@/stores/admin.js'
+import { storeToRefs } from 'pinia'
 
-onMounted(async () => {})
+const {
+	fetchUser,
+	createUser,
+	createUserByUpload,
+	updateUser,
+	deleteUser,
+	fetchDeparments,
+} = useAdminStore()
+
+const { listUser, departments } = storeToRefs(useAdminStore())
+
+onMounted(async () => {
+	fetchUser()
+	fetchDeparments()
+})
+const file = ref('')
+
 const isEditing = ref(false)
+
+const department = ref('');
+
 const data = reactive({
+	id: '',
 	username: '',
 	name: '',
 	password: '',
-	phoneNumber: '',
+	phone: '',
 	address: '',
-	role: 1,
+	birthday: '',
+	role: 'employee',
 	department: '',
 })
 
 const roleList = reactive([
 	{
-		value: 1,
+		value: 'admin',
 		text: 'Admin',
 	},
 	{
-		value: 2,
-		text: 'Employeee',
+		value: 'employee',
+		text: 'Employee',
 	},
 	{
-		value: 3,
+		value: 'hr',
 		text: 'Human Resources',
 	},
 	{
-		value: 4,
+		value: 'accountancy',
 		text: 'Accountant',
+	},
+	{
+		value: 'head_department',
+		text: 'Head department',
 	},
 ])
 
@@ -46,7 +73,7 @@ const headers = reactive([
 	{
 		type: 'string',
 		text: 'Phone number',
-		key: 'phoneNumber',
+		key: 'phone',
 	},
 	{
 		type: 'string',
@@ -64,45 +91,32 @@ const headers = reactive([
 	},
 ])
 
-const listTable = reactive([
-	{
-		id: 1,
-		username: 'user1',
-		name: 'name1',
-		phoneNumber: '123',
-		address: 'abc',
-		role: 'Admin',
-	},
-	{
-		id: 2,
-		username: 'user2',
-		name: 'name2',
-		phoneNumber: '123',
-		address: 'ab2',
-		role: 'Employeee',
-	},
-	{
-		id: 3,
-		username: 'user3',
-		name: 'name3',
-		phoneNumber: '123',
-		address: 'abc',
-		role: 'Employeee',
-	},
-])
 const handleCreateUser = async () => {
 	const requestBody = {
 		username: data.username,
 		name: data.name,
 		password: data.password,
-		phoneNumber: data.phoneNumber,
+		birthday: data.birthday,
+		phone: data.phone,
 		address: data.address,
-		role: data.role,
+		role: data.role === 'employee' ? ['employee'] : ['employee', data.role],
 		department: data.department,
 	}
 
-	const response = await createUser()
+	const response = await createUser(requestBody)
+	if (response.data.status === true) {
+		fetchUser()
+		handleResetInput()
+	}
+}
+
+const handleCreateUserByUpload = async (event) => {
+	file.value = event.target.files[0]
+	let formData = new FormData()
+	formData.append('file', file.value)
+	const response = await createUserByUpload(formData)
 	if (response === true) {
+		fetchUser()
 		handleResetInput()
 	}
 }
@@ -111,26 +125,31 @@ const handleUpdateUser = async () => {
 	const requestBody = {
 		username: data.username,
 		name: data.name,
-		password: data.password,
-		phoneNumber: data.phoneNumber,
+		phone: data.phone,
 		address: data.address,
-		role: data.role,
+		role: data.role === 'employee' ? ['employee'] : ['employee', data.role],
+		birthday: data.birthday,
+		department: data.department,
 	}
 
-	const response = await updateUser()
+	const response = await updateUser(requestBody, data.id)
 	if (response === true) {
 		handleResetInput()
+		fetchUser(department.value)
 		isEditing.value = false
 	}
 }
 
 const handleEdit = item => {
+	data.id = item.id
 	data.username = item.username
 	data.name = item.name
 	data.password = item.password
-	data.phoneNumber = item.phoneNumber
+	data.phone = item.phone
 	data.address = item.address
 	data.role = item.role
+	data.birthday = item.birthday
+	data.department = item.department
 	isEditing.value = true
 }
 
@@ -145,9 +164,20 @@ const handleResetInput = () => {
 	data.username = ''
 	data.name = ''
 	data.password = ''
-	data.phoneNumber = ''
+	data.phone = ''
 	data.address = ''
-	data.role = ''
+	data.role = 'employee'
+	data.birthday = '', 
+	data.department = 'Dept1'
+}
+
+const handleCancelUpdate = () => {
+	handleResetInput()
+	isEditing.value = false
+}
+
+const handleFileUpload = event => {
+	file.value = event.target.files[0]
 }
 
 const currentSort = ref('createdAt')
@@ -170,24 +200,37 @@ const sortedList = computed(() => {
 	})
 })
 </script>
+
 <template>
 	<div class="user-manager p-4">
 		<div>
-			<h3 v-if="isEditing === false"><p>Create User</p></h3>
-			<h3 v-else><p>Update User</p></h3>
+			<div class="form-input-file d-flex gap-2">
+				<input type="file" ref="fileInput" @change="handleCreateUserByUpload($event)" hidden />
+				<button
+					class="btn-create border-0 py-2 px-3 bg-green btn btn-success"
+					@click="$refs.fileInput.click()">
+					Create user by upload
+				</button>
+			</div>
+			<h3 v-if="isEditing === false"><p id="create-title">Create User Manual</p></h3>
+			<h3 v-else><p id="create-title">Update User</p></h3>
 			<div class="form-input d-flex flex-column gap-2">
 				<div class="d-flex gap-3">
 					<div>
 						<p>User name</p>
 						<input type="text" v-model="data.username" />
 					</div>
-					<div>
+					<div v-if="isEditing == false">
 						<p>Password</p>
 						<input type="text" v-model="data.password" />
 					</div>
 					<div>
 						<p>Phone number</p>
-						<input type="number" v-model="data.phoneNumber" />
+						<input type="text" v-model="data.phone" />
+					</div>
+					<div>
+						<p>Birthday</p>
+						<input type="text" v-model="data.birthday" />
 					</div>
 				</div>
 				<div class="d-flex gap-3">
@@ -207,8 +250,20 @@ const sortedList = computed(() => {
 							</option>
 						</select>
 					</div>
+					<div>
+						<p>Department</p>
+						<select v-model="data.department">
+							<option
+								v-for="department in departments"
+								:key="department.name"
+								:value="department.id">
+								{{ department.name }}
+							</option>
+						</select>
+					</div>
 				</div>
 			</div>
+
 			<div class="request mt-3 d-flex gap-3">
 				<button
 					class="btn-create border-0 py-2 px-3 bg-green btn btn-success"
@@ -225,12 +280,29 @@ const sortedList = computed(() => {
 				<button
 					class="btn-reset border-0 py-2 px-3 btn btn-danger"
 					@click="handleResetInput"
+					v-if="isEditing === false"
 					>Reset</button
+				>
+				<button
+					class="btn-reset border-0 py-2 px-3 btn btn-danger"
+					@click="handleCancelUpdate"
+					v-else
+					>Cancle</button
 				>
 			</div>
 		</div>
 		<div>
-			<table class="table-user mt-5">
+			<br> <br>
+			<p>Search with department</p>
+			<select v-model="department" @change="fetchUser(department)">
+				<option
+					v-for="department in departments"
+					:key="department.name"
+					:value="department.id">
+					{{ department.name }}
+				</option>
+			</select>
+			<table class="table-user mt-3">
 				<tr>
 					<th
 						v-for="header in headers"
@@ -240,10 +312,10 @@ const sortedList = computed(() => {
 						{{ header.text }}
 					</th>
 				</tr>
-				<tr v-for="item in sortedList" :key="item" class="table-body py-1 px-2">
+				<tr v-for="item in listUser" :key="item" class="table-body py-1 px-2">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
-						<p v-if="header.type === 'action'">
+						<p v-if="header.type === 'action'" class="action">
 							<span
 								class="material-symbols-outlined btn-edit"
 								@click="handleEdit(item)">
@@ -258,9 +330,13 @@ const sortedList = computed(() => {
 					</td>
 				</tr>
 			</table>
+			<div v-if="listUser.length == 0" style="text-align:center; border: solid 1px gray; padding: 1rem;">
+				<span>No data here...</span>
+			</div>
 		</div>
 	</div>
 </template>
+
 <style lang="scss" scoped>
 .user-manager {
 	.table-user {
@@ -273,6 +349,7 @@ const sortedList = computed(() => {
 			&:last-child {
 				border-right: none !important;
 			}
+			text-align: center;
 		}
 
 		.table-body {
@@ -281,6 +358,7 @@ const sortedList = computed(() => {
 				text-align: center;
 			}
 			td {
+				text-align: center;
 				padding: 0 1rem;
 				border-color: #337ab7;
 				border-style: solid none solid solid;
@@ -294,11 +372,18 @@ const sortedList = computed(() => {
 				&:nth-child(6) {
 					border-right: 0.5px solid #337ab7;
 				}
+				span {
+					font-size: 13px;
+				}
+				.action {
+					width: auto;
+				}
 			}
 
 			.btn-edit,
 			.btn-delete {
 				cursor: pointer;
+				font-size: 20px;
 			}
 
 			.btn-edit {
@@ -318,6 +403,7 @@ const sortedList = computed(() => {
 	p {
 		font-weight: bold;
 		width: 200px;
+		margin-bottom: 0px;
 	}
 	input,
 	select {
@@ -334,6 +420,9 @@ const sortedList = computed(() => {
 			outline: none;
 			box-shadow: #9bcbf0 0px 0px 5px 0px;
 		}
+	}
+	#create-title {
+		width: 400px;
 	}
 }
 </style>

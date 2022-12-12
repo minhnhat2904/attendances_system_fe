@@ -14,7 +14,7 @@ onMounted(async () => {
 	if (localStorage.getItem('token')) {
 		const token = localStorage.getItem('token')
 		userInfo.value = jwtDecode(token)
-		getRemainHours();
+		// getRemainHours();
 	}
 })
 const logoutFn = async () => {
