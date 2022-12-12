@@ -176,10 +176,6 @@ const handleCancelUpdate = () => {
 	isEditing.value = false
 }
 
-const handleFileUpload = event => {
-	file.value = event.target.files[0]
-}
-
 const currentSort = ref('createdAt')
 const currentSortDir = ref('desc')
 
