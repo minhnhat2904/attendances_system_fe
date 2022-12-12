@@ -62,7 +62,7 @@ const toggleMenu = () => {
 			</router-link>
 		</div>
 		<!-- Role Head Department -->
-		<div class="side-bar_list" v-if="userInfo.role === 'head_department'">
+		<div class="side-bar_list" v-if="userInfo.role !== undefined && userInfo.role.includes('head_department')">
 			<router-link class="side-bar-item" to="/headDepartment/">
 				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
 				<span class="title" v-if="isExpanded">History equest</span>
