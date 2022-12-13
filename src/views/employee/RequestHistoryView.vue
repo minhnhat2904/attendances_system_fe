@@ -5,7 +5,9 @@ import { useUserStore } from '@/stores/user.js'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { hoursToDaysAndHours } from '@/helper/helper.js'
-
+import { useVuelidate } from '@vuelidate/core'
+import { required, minValue } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
 const { getRequestResultList } = storeToRefs(useCreateRequestStore())
@@ -89,8 +91,31 @@ const dateTime = computed(() => {
 	return hoursToDaysAndHours(remainHours.value)
 })
 
-const handleSearch = () => {
-	console.log('search')
+const filterWorkingReport = reactive({
+	from: '',
+	to: '',
+})
+
+const rules = computed(() => {
+	return {
+		from: { required },
+		to: { required, minValue: minValue(filterWorkingReport.from) },
+	}
+})
+
+const v$ = useVuelidate(rules, filterWorkingReport)
+
+const handleSearch = async () => {
+	const toast = useToast()
+	const result = await v$.value.$validate()
+
+	if (result) {
+		// await
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
+	}
 }
 
 const handleReset = () => {
@@ -128,11 +153,17 @@ const sortedList = computed(() => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" />
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterWorkingReport.from" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" />
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterWorkingReport.to" />
 			</div>
 			<div class="search-status">
 				<p><b>Status</b></p>

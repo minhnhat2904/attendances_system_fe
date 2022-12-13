@@ -5,11 +5,11 @@ import { useAuthStore } from '@/stores/auth.js'
 import { useUserStore } from '@/stores/user.js'
 import jwtDecode from 'jwt-decode'
 import Sidebar from '@/components/Sidebar.vue'
-const { getRemainHours } = useUserStore();
+const { getRemainHours } = useUserStore()
 
 const userInfo = ref({})
 const auth = useAuthStore()
-const { remainHours } = storeToRefs(useUserStore());
+const { remainHours } = storeToRefs(useUserStore())
 onMounted(async () => {
 	if (localStorage.getItem('token')) {
 		const token = localStorage.getItem('token')
@@ -60,12 +60,15 @@ const logoutFn = async () => {
 	</div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .layout-default {
 	display: flex;
 	flex-direction: column;
+	justify-content: space-between;
 	z-index: 900;
 	position: relative;
+	width: 100%;
+	height: 100vh;
 
 	&_header {
 		display: flex;
@@ -85,7 +88,7 @@ const logoutFn = async () => {
 
 	&_main {
 		display: flex;
-		// height: calc(100vh - 140px);
+		height: calc(100vh - 140px);
 		height: 100%;
 
 		.layout-default_content {

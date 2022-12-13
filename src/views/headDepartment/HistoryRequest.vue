@@ -1,8 +1,12 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
+import { useVuelidate } from '@vuelidate/core'
+import { required, minValue } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
+
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
 const { userInfo } = storeToRefs(useUserStore())
@@ -130,8 +134,29 @@ const listTable = reactive([
 	},
 ])
 
-const handleSearch = () => {
-	console.log('search')
+const filterWorkingReport = reactive({
+	periodFrom: '',
+	periodTo: '',
+})
+
+const rules = computed(() => {
+	return {
+		periodFrom: { required },
+		periodTo: { required, minValue: minValue(filterWorkingReport.from) },
+	}
+})
+
+const v$ = useVuelidate(rules, filterWorkingReport)
+const handleSearch = async () => {
+	const toast = useToast()
+	const result = await v$.value.$validate()
+	if (result) {
+		// await
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
+	}
 }
 
 const handleReset = () => {
@@ -149,11 +174,11 @@ const handleReset = () => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" />
+				<input type="date" class="search-area-input" v-model="periodFrom" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" />
+				<input type="date" class="search-area-input" v-model="periodTo" />
 			</div>
 			<div class="search-status">
 				<p><b>Status</b></p>
@@ -187,7 +212,6 @@ const handleReset = () => {
 			</select>
 			<span> entries </span>
 		</div>
-
 		<table id="tableComponent" class="table table-bordered table-striped">
 			<thead>
 				<tr>
@@ -209,7 +233,6 @@ const handleReset = () => {
 			</tbody>
 		</table>
 	</div>
-
 </template>
 <style lang="scss" scoped>
 .request-history-page {

@@ -1,8 +1,10 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '@/stores/admin.js'
 import { storeToRefs } from 'pinia'
-
+import { useVuelidate } from '@vuelidate/core'
+import { required, email, numeric, minLength } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
 const {
 	fetchUser,
 	createUser,
@@ -22,9 +24,9 @@ const file = ref('')
 
 const isEditing = ref(false)
 
-const department = ref('');
+const department = ref('')
 
-const data = reactive({
+const formData = reactive({
 	id: '',
 	username: '',
 	name: '',
@@ -35,6 +37,21 @@ const data = reactive({
 	role: 'employee',
 	department: '',
 })
+
+const rules = computed(() => {
+	return {
+		username: { required, email, minLength: minLength(10) },
+		password: { required, minLength: minLength(6) },
+		name: { required, minLength: minLength(2) },
+		phone: { required, numeric, minLength: minLength(10) },
+		address: { required, minLength: minLength(5) },
+		birthday: { required },
+		role: { required, numeric },
+		department: { required },
+	}
+})
+
+const v$ = useVuelidate(rules, formData)
 
 const roleList = reactive([
 	{
@@ -92,25 +109,34 @@ const headers = reactive([
 ])
 
 const handleCreateUser = async () => {
-	const requestBody = {
-		username: data.username,
-		name: data.name,
-		password: data.password,
-		birthday: data.birthday,
-		phone: data.phone,
-		address: data.address,
-		role: data.role === 'employee' ? ['employee'] : ['employee', data.role],
-		department: data.department,
-	}
+	const toast = useToast()
+	const result = await v$.value.$validate()
+	if (result) {
+		const requestBody = {
+			username: formData.username,
+			name: formData.name,
+			password: formData.password,
+			phone: formData.phone,
+			address: formData.address,
+			birthday: formData.birthday,
+			role:
+				formData.role === 'employee' ? ['employee'] : ['employee', formData.role],
+			department: formData.department,
+		}
 
-	const response = await createUser(requestBody)
-	if (response.data.status === true) {
-		fetchUser()
-		handleResetInput()
+		const response = await createUser(requestBody)
+		if (response.data.status === true) {
+			fetchUser()
+			handleResetInput()
+		}
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
 	}
 }
 
-const handleCreateUserByUpload = async (event) => {
+const handleCreateUserByUpload = async event => {
 	file.value = event.target.files[0]
 	let formData = new FormData()
 	formData.append('file', file.value)
@@ -122,34 +148,43 @@ const handleCreateUserByUpload = async (event) => {
 }
 
 const handleUpdateUser = async () => {
-	const requestBody = {
-		username: data.username,
-		name: data.name,
-		phone: data.phone,
-		address: data.address,
-		role: data.role === 'employee' ? ['employee'] : ['employee', data.role],
-		birthday: data.birthday,
-		department: data.department,
-	}
+	const toast = useToast()
+	const result = await v$.value.$validate()
+	if (result) {
+		const requestBody = {
+			username: formData.username,
+			name: formData.name,
+			phone: formData.phone,
+			address: formData.address,
+			role:
+				formData.role === 'employee' ? ['employee'] : ['employee', formData.role],
+			birthday: formData.birthday,
+			department: formData.department,
+		}
 
-	const response = await updateUser(requestBody, data.id)
-	if (response === true) {
-		handleResetInput()
-		fetchUser(department.value)
-		isEditing.value = false
+		const response = await updateUser(requestBody, formData.id)
+		if (response === true) {
+			handleResetInput()
+			fetchUser(department.value)
+			isEditing.value = false
+		}
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
 	}
 }
 
 const handleEdit = item => {
-	data.id = item.id
-	data.username = item.username
-	data.name = item.name
-	data.password = item.password
-	data.phone = item.phone
-	data.address = item.address
-	data.role = item.role
-	data.birthday = item.birthday
-	data.department = item.department
+	formData.id = item.id
+	formData.username = item.username
+	formData.name = item.name
+	formData.password = item.password
+	formData.phone = item.phone
+	formData.address = item.address
+	formData.role = item.role
+	formData.birthday = item.birthday
+	formData.department = item.department
 	isEditing.value = true
 }
 
@@ -161,19 +196,25 @@ const handleDelete = async id => {
 }
 
 const handleResetInput = () => {
-	data.username = ''
-	data.name = ''
-	data.password = ''
-	data.phone = ''
-	data.address = ''
-	data.role = 'employee'
-	data.birthday = '', 
-	data.department = 'Dept1'
+	formData.username = ''
+	formData.name = ''
+	formData.password = ''
+	formData.phone = ''
+	formData.address = ''
+	formData.role = 'employee'
+	;(formData.birthday = ''), (formData.department = 'Dept1')
 }
 
 const handleCancelUpdate = () => {
 	handleResetInput()
 	isEditing.value = false
+	formData.username = ''
+	formData.name = ''
+	formData.password = ''
+	formData.phone = ''
+	formData.address = ''
+	formData.birthday = ''
+	formData.role = ''
 }
 
 const currentSort = ref('createdAt')
@@ -201,7 +242,11 @@ const sortedList = computed(() => {
 	<div class="user-manager p-4">
 		<div>
 			<div class="form-input-file d-flex gap-2">
-				<input type="file" ref="fileInput" @change="handleCreateUserByUpload($event)" hidden />
+				<input
+					type="file"
+					ref="fileInput"
+					@change="handleCreateUserByUpload($event)"
+					hidden />
 				<button
 					class="btn-create border-0 py-2 px-3 bg-green btn btn-success"
 					@click="$refs.fileInput.click()">
@@ -214,33 +259,33 @@ const sortedList = computed(() => {
 				<div class="d-flex gap-3">
 					<div>
 						<p>User name</p>
-						<input type="text" v-model="data.username" />
+						<input type="text" v-model="formData.username" />
 					</div>
 					<div v-if="isEditing == false">
 						<p>Password</p>
-						<input type="text" v-model="data.password" />
+						<input type="text" v-model="formData.password" />
 					</div>
 					<div>
 						<p>Phone number</p>
-						<input type="text" v-model="data.phone" />
+						<input type="text" v-model="formData.phone" />
 					</div>
 					<div>
 						<p>Birthday</p>
-						<input type="text" v-model="data.birthday" />
+						<input type="text" v-model="formData.birthday" />
 					</div>
 				</div>
 				<div class="d-flex gap-3">
 					<div>
 						<p>Name</p>
-						<input type="text" v-model="data.name" />
+						<input type="text" v-model="formData.name" />
 					</div>
 					<div>
 						<p>Address</p>
-						<input type="text" v-model="data.address" />
+						<input type="text" v-model="formData.address" />
 					</div>
 					<div>
 						<p>Role</p>
-						<select v-model="data.role">
+						<select v-model="formData.role">
 							<option v-for="role in roleList" :key="role.value" :value="role.value">
 								{{ role.text }}
 							</option>
@@ -248,7 +293,7 @@ const sortedList = computed(() => {
 					</div>
 					<div>
 						<p>Department</p>
-						<select v-model="data.department">
+						<select v-model="formData.department">
 							<option
 								v-for="department in departments"
 								:key="department.name"
@@ -288,7 +333,8 @@ const sortedList = computed(() => {
 			</div>
 		</div>
 		<div>
-			<br> <br>
+			<br />
+			<br />
 			<p>Search with department</p>
 			<select v-model="department" @change="fetchUser(department)">
 				<option
@@ -326,7 +372,9 @@ const sortedList = computed(() => {
 					</td>
 				</tr>
 			</table>
-			<div v-if="listUser.length == 0" style="text-align:center; border: solid 1px gray; padding: 1rem;">
+			<div
+				v-if="listUser.length == 0"
+				style="text-align: center; border: solid 1px gray; padding: 1rem">
 				<span>No data here...</span>
 			</div>
 		</div>

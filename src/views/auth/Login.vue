@@ -7,7 +7,6 @@
 				name="address"
 				v-model.trim="credentials.username"
 				type="text"
-				required
 				placeholder="User name"
 				class="login-form_input" />
 			<input
@@ -15,7 +14,6 @@
 				name="passwd"
 				v-model.trim="credentials.password"
 				type="password"
-				required
 				placeholder="Password"
 				class="login-form_input" />
 
@@ -29,9 +27,12 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
+import { useVuelidate } from '@vuelidate/core'
+import { required, email, minLength } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
 
 const router = useRouter()
 const auth = useAuthStore()
@@ -41,9 +42,26 @@ const credentials = reactive({
 	password: null,
 })
 
+const rules = computed(() => {
+	return {
+		username: { required, email, minLength: minLength(10) },
+		password: { required, minLength: minLength(6) },
+	}
+})
+
+const v$ = useVuelidate(rules, credentials)
+
 const handleLogin = async () => {
-	await auth.login(credentials)
-	await router.push('/')
+	const toast = useToast()
+	const result = await v$.value.$validate()
+	if (result) {
+		await auth.login(credentials)
+		await router.push('/')
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
+	}
 }
 </script>
 
@@ -63,6 +81,11 @@ const handleLogin = async () => {
 		flex-direction: column;
 
 		gap: 10px;
+
+		.error {
+			width: 100%;
+			height: 50px;
+		}
 
 		&_title {
 			display: flex;
@@ -121,4 +144,3 @@ const handleLogin = async () => {
 	}
 }
 </style>
-

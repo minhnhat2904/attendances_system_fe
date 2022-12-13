@@ -7,20 +7,17 @@
 				v-model="credentials.name"
 				type="text"
 				placeholder="User name"
-				required
 				class="register-form_input" />
 			<input
 				id="email"
 				v-model="credentials.email"
 				type="text"
 				placeholder="Email"
-				required
 				class="register-form_input" />
 			<input
 				id="password"
 				v-model="credentials.password"
 				type="password"
-				required
 				class="register-form_input"
 				placeholder="Password" />
 			<input
@@ -28,7 +25,6 @@
 				v-model="credentials.password_confirmation"
 				type="password"
 				placeholder="Confirm Password"
-				required
 				class="register-form_input" />
 
 			<div class="register-form_action">
@@ -42,10 +38,14 @@
 </template>
 
 <script setup>
-import { reactive } from 'vue'
+import { computed, reactive } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth.js'
-
+import { useVuelidate } from '@vuelidate/core'
+import { required, email, minLength, sameAs } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
+const auth = useAuthStore()
+const router = useRouter()
 const credentials = reactive({
 	name: '',
 	email: '',
@@ -53,12 +53,28 @@ const credentials = reactive({
 	password_confirmation: '',
 })
 
-const auth = useAuthStore()
-const router = useRouter()
+const rules = computed(() => {
+	return {
+		name: { required, minLength: minLength(3) },
+		email: { required, email, minLength: minLength(10) },
+		password: { required, minLength: minLength(6) },
+		password_confirmation: { required, sameAs: sameAs(credentials.password) },
+	}
+})
+
+const v$ = useVuelidate(rules, credentials)
 
 const registerFn = async () => {
-	await auth.register(credentials)
-	await router.push('/')
+	const toast = useToast()
+	const result = await v$.value.$validate()
+	if (result) {
+		await auth.register(credentials)
+		await router.push('/')
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
+	}
 }
 </script>
 

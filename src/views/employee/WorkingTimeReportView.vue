@@ -5,6 +5,9 @@ import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { useAttendanceStore } from '@/stores/attendances.js'
 import { useWorkingReportStore } from '@/stores/workingReport.js'
+import { useVuelidate } from '@vuelidate/core'
+import { required, numeric, minLength, minValue } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
 
 // const { get } = useAttendanceStore()
 const { getProfile } = useUserStore()
@@ -27,7 +30,6 @@ onMounted(async () => {
 const entrySelected = ref(25)
 const isShowModal = ref(false)
 const isEditMode = ref(false)
-
 const queryParamsWorkingReport = reactive({
 	time: '',
 	note: '',
@@ -37,6 +39,34 @@ const queryParamsWorkingReport = reactive({
 	project: '',
 	task: '',
 })
+
+const filterWorkingReport = reactive({
+	periodFrom: '',
+	periodTo: '',
+})
+
+const rulesFilter = computed(() => {
+	return {
+		periodFrom: { required },
+		periodTo: { required, minValue: minValue(filterWorkingReport.from) },
+	}
+})
+
+const v2$ = useVuelidate(rulesFilter, filterWorkingReport)
+
+const rules = computed(() => {
+	return {
+		time: { required, numeric },
+		note: { required, minLength: minLength(13) },
+		date: { required },
+		ticket: { required, numeric, minLength: minLength(3) },
+		workingreportId: { required },
+		project: { required },
+		task: { required },
+	}
+})
+
+const v$ = useVuelidate(rules, queryParamsWorkingReport)
 
 const entryOptions = reactive([
 	{ text: 10, value: '10' },
@@ -99,25 +129,50 @@ const taskOptions = reactive([
 	{ text: 'Study', value: '3' },
 ])
 
+const handleSearch = async () => {
+	const toast = useToast()
+	const result = await v2$.value.$validate()
+
+	if (result) {
+		// await
+	} else {
+		toast.error(
+			`${v2$.value.$errors[0].$property}-${v2$.value.$errors[0].$message}`,
+			{
+				timeout: 2000,
+			}
+		)
+	}
+}
+
 const handleShowModalCreate = () => {
 	isShowModal.value = true
 }
 
 const handleSaveWorkingReport = async () => {
-	const requestBody = {
-		date: queryParamsWorkingReport.date,
-		project: queryParamsWorkingReport.project,
-		ticket: queryParamsWorkingReport.ticket,
-		task: queryParamsWorkingReport.task,
-		time: queryParamsWorkingReport.time,
-		note: queryParamsWorkingReport.note,
-	}
+	const toast = useToast()
+	const result = await v$.value.$validate()
 
-	const result = await createWorkingReport(requestBody)
+	if (result) {
+		const requestBody = {
+			date: queryParamsWorkingReport.date,
+			project: queryParamsWorkingReport.project,
+			ticket: queryParamsWorkingReport.ticket,
+			task: queryParamsWorkingReport.task,
+			time: queryParamsWorkingReport.time,
+			note: queryParamsWorkingReport.note,
+		}
 
-	if (result.data.status === true) {
-		clearInput()
-		isShowModal.value = false
+		const response = await createWorkingReport(requestBody)
+
+		if (response.data.status === true) {
+			clearInput()
+			isShowModal.value = false
+		}
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
 	}
 }
 
@@ -134,25 +189,33 @@ const handleShowModalEdit = async item => {
 }
 
 const handleUpdateWorkingReport = async () => {
-	const requestBody = {
-		date: queryParamsWorkingReport.date,
-		project: queryParamsWorkingReport.project,
-		ticket: queryParamsWorkingReport.ticket,
-		task: queryParamsWorkingReport.task,
-		time: queryParamsWorkingReport.time,
-		note: queryParamsWorkingReport.note,
-	}
+	const toast = useToast()
+	const result = await v$.value.$validate()
 
-	const result = await updateWorkingReport(
-		requestBody,
-		queryParamsWorkingReport.workingreportId
-	)
+	if (result) {
+		const requestBody = {
+			date: queryParamsWorkingReport.date,
+			project: queryParamsWorkingReport.project,
+			ticket: queryParamsWorkingReport.ticket,
+			task: queryParamsWorkingReport.task,
+			time: queryParamsWorkingReport.time,
+			note: queryParamsWorkingReport.note,
+		}
+		const response = await updateWorkingReport(
+			requestBody,
+			queryParamsWorkingReport.workingreportId
+		)
 
-	if (result.data.status === true) {
-		await getWorkingReport(userInfo.value.id)
-		clearInput()
-		isEditMode.value = false
-		isShowModal.value = false
+		if (response.data.status === true) {
+			await getWorkingReport(userInfo.value.id)
+			clearInput()
+			isEditMode.value = false
+			isShowModal.value = false
+		}
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
 	}
 }
 
@@ -210,11 +273,17 @@ const sortedList = computed(() => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" />
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterWorkingReport.periodFrom" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" />
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterWorkingReport.periodTo" />
 			</div>
 
 			<div class="action">

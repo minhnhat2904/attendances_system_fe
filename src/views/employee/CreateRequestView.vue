@@ -4,6 +4,9 @@ import { storeToRefs } from 'pinia'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { useUserStore } from '@/stores/user.js'
 import { hoursToDaysAndHours } from '@/helper/helper.js'
+import { useVuelidate } from '@vuelidate/core'
+import { required, numeric, minLength, maxValue } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
 
 const { getRemainHours } = useUserStore()
 const { remainHours } = storeToRefs(useUserStore())
@@ -29,6 +32,32 @@ const leave = reactive({
 	reasonSelected: 5,
 	reasonDetail: '',
 })
+
+const rules = computed(() => {
+	return {
+		offDays: {
+			required,
+			numeric,
+			maxValue: maxValue(15),
+		},
+		offHours: {
+			required,
+			numeric,
+			maxValue: maxValue(8),
+		},
+		periodFrom: { required },
+		periodTo: { required, minValue: maxValue(leave.periodFrom) },
+		typeOffSelected: { required },
+		hourFromSelected: { required },
+		minuteFromSelected: { required },
+		hourToSelected: { required },
+		minuteToSelected: { required },
+		reasonSelected: { required },
+		reasonDetail: { required, minLength: minLength(12) },
+	}
+})
+
+const v$ = useVuelidate(rules, leave)
 
 const hoursOfLeave = reactive([
 	{ text: '0', value: 0 },
@@ -92,34 +121,43 @@ const dateTime = computed(() => {
 })
 
 const handleSendRequest = async () => {
-	const data = {
-		startDate:
-			leave.periodFrom +
-			' ' +
-			leave.hourFromSelected +
-			':' +
-			leave.minuteFromSelected +
-			':00',
-		endDate:
-			leave.periodTo +
-			' ' +
-			leave.hourToSelected +
-			':' +
-			leave.minuteToSelected +
-			':00',
-		amountDay: leave.offDays,
-		amountHour: leave.offHours,
-		typeOff: leave.typeOffSelected,
-		reason: leave.reasonSelected,
-		reasonDetail: leave.reasonDetail,
-		status: 0,
-		receiver: 'Dept1',
-	}
-	const response = await createRequestOff(data)
+	const toast = useToast()
+	const result = await v$.value.$validate()
 
-	if (response.data.status === true) {
-		getRemainHours()
-		handleResetRequest()
+	if (result) {
+		const data = {
+			startDate:
+				leave.periodFrom +
+				' ' +
+				leave.hourFromSelected +
+				':' +
+				leave.minuteFromSelected +
+				':00',
+			endDate:
+				leave.periodTo +
+				' ' +
+				leave.hourToSelected +
+				':' +
+				leave.minuteToSelected +
+				':00',
+			amountDay: leave.offDays,
+			amountHour: leave.offHours,
+			typeOff: leave.typeOffSelected,
+			reason: leave.reasonSelected,
+			reasonDetail: leave.reasonDetail,
+			status: 0,
+			receiver: 'Dept1',
+		}
+		const response = await createRequestOff(data)
+
+		if (response.data.status === true) {
+			getRemainHours()
+			handleResetRequest()
+		}
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
 	}
 }
 const handleResetRequest = () => {
@@ -268,7 +306,6 @@ const handleResetRequest = () => {
 .request {
 	padding: 1rem 2rem;
 	&-header {
-
 	}
 
 	.time-off {
