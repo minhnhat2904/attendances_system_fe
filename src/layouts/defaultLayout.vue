@@ -23,40 +23,34 @@ const logoutFn = async () => {
 </script>
 
 <template>
-	<div class="layout-default">
-		<header class="layout-default_header">
-			<router-link to="/">
-				<img
-					alt="Vue logo"
-					class="logo"
-					src="@/assets/verified-account.png"
-					width="35"
-					height="35" />
-			</router-link>
-			<div class="wrapper">
-				<nav class="d-flex text-white">
-					<span>{{ userInfo.username }}</span>
-					<span class="mx-1">|</span>
-					<span class="material-symbols-outlined icon-logout" @click="logoutFn">
-						logout
-					</span>
-				</nav>
-			</div>
-		</header>
+	<div class="layout-default d-flex">
+		<div class="layout-default_navbar">
+			<Sidebar :userInfo="userInfo" />
+		</div>
+		<div class="w-100">
+			<header class="layout-default_header">
+				<div class="wrapper">
+					<nav class="d-flex">
+						<span class="user-name">{{ userInfo.username }}</span>
+						<span class="mx-1">|</span>
+						<span class="material-symbols-outlined icon-logout" @click="logoutFn">
+							logout
+						</span>
+					</nav>
+				</div>
+			</header>
 
-		<main class="layout-default_main">
-			<div class="layout-default_navbar">
-				<Sidebar :userInfo="userInfo" />
-			</div>
-			<div class="layout-default_content">
-				<slot />
-			</div>
-		</main>
+			<main class="layout-default_main">
+				<div class="layout-default_content">
+					<slot />
+				</div>
+			</main>
 
-		<footer class="layout-default_footer">
-			<p>© Copyright 2022</p>
-			<p>Attendance System Project (2022)</p>
-		</footer>
+			<footer class="layout-default_footer">
+				<p>© Copyright 2022</p>
+				<p>Attendance System Project (2022)</p>
+			</footer>
+		</div>
 	</div>
 </template>
 
@@ -68,14 +62,17 @@ const logoutFn = async () => {
 
 	&_header {
 		display: flex;
-		justify-content: space-between;
+		justify-content: flex-end;
 		align-items: center;
 		padding: 0px 20px;
 		height: 56px !important;
-		background: #337ab7;
-
+		color: #337ab7;
+		box-shadow: 0px 1px 5px 1px;
+		.user-name {
+			cursor: pointer;
+		}
 		.icon-logout {
-			color: white;
+			color: #337ab7;
 			font-weight: bold;
 			font-style: 1.2rem;
 			cursor: pointer;

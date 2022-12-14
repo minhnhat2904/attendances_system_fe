@@ -12,6 +12,11 @@ const toggleMenu = () => {
 
 <template>
 	<div :class="isExpanded ? 'is-expanded' : ''" class="side-bar">
+		<div class="logo w-100 px-3">
+			<router-link to="/">
+				<img alt="Vue logo" class="logo" src="@/assets/verified-account.png" />
+			</router-link>
+		</div>
 		<div class="side-bar_toggle-wrap" @click="toggleMenu">
 			<span class="material-symbols-outlined side-bar-icon" v-if="isExpanded">
 				keyboard_double_arrow_left
@@ -22,7 +27,7 @@ const toggleMenu = () => {
 		</div>
 		<!-- Role employee -->
 		<div
-			class="side-bar_list"
+			class="side-bar_list mt-5"
 			v-if="userInfo.role !== undefined && userInfo.role.includes('employee')">
 			<router-link class="side-bar-item" to="/">
 				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
@@ -94,11 +99,15 @@ const toggleMenu = () => {
 	justify-content: flex-start;
 	height: 100%;
 	overflow: visible;
-	background-color: white;
+	background-color: #282c34;
 	transition: 0.2s ease-out;
 	position: relative;
 	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px;
 	transition: 0.2s ease-out;
+
+	.logo {
+		height: 56px;
+	}
 
 	&_toggle-wrap {
 		display: flex;
@@ -138,10 +147,10 @@ const toggleMenu = () => {
 			transition: 0.22 ease-out;
 			height: 50px;
 			border-bottom: 1px solid rgb(181, 181, 181);
-			color: #337ab7;
+			color: white;
 
 			.side-bar-icon {
-				color: #337ab7;
+				color: white;
 				font-size: 1.2rem;
 				font-weight: bold;
 				transition: 0.2 ease-out;
@@ -160,16 +169,24 @@ const toggleMenu = () => {
 			&:hover {
 				color: #124c7f;
 				background-color: #f3f3f3;
+				.side-bar-icon {
+					color: #124c7f;
+				}
 			}
 		}
 	}
 
 	&.is-expanded {
-		width: 250px;
+		width: 300px;
 		transition: 0.2 ease-out;
 	}
 	.router-link-active {
+		color: #124c7f;
 		background-color: #f3f3f3;
+
+		.side-bar-icon {
+			color: #124c7f;
+		}
 	}
 }
 </style>
