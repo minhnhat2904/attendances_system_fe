@@ -116,7 +116,6 @@ const handleSendRequest = async () => {
 		receiver: 'Dept1',
 	}
 	const response = await createRequestOff(data)
-
 	if (response.data.status === true) {
 		getRemainHours()
 		handleResetRequest()

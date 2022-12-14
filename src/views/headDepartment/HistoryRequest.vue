@@ -3,6 +3,8 @@ import { reactive, ref, onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
+import { formatDay } from '../../helper/helper'
+
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
 const { userInfo } = storeToRefs(useUserStore())
@@ -10,7 +12,7 @@ const { requestResultList } = storeToRefs(useCreateRequestStore())
 
 onMounted(async () => {
 	await getProfile()
-	fetchRequestResult(userInfo.value.id)
+	fetchRequestResult()
 })
 
 const checkbox = ref('')
@@ -32,32 +34,18 @@ const requestTypes = reactive([
 
 const headers = [
 	{
-		type: 'string',
-		value: 'Id',
-		key: 'id',
-	},
-	{
-		type: 'string',
-		value: 'User Name',
-		key: 'userName',
-	},
-	{
-		type: 'string',
-		value: 'Phone number',
-		key: 'phoneNumber',
-	},
-	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'Created',
 		key: 'createdAt',
+		id: '',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'From',
 		key: 'startDate',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'To',
 		key: 'endDate',
 	},
@@ -77,7 +65,7 @@ const headers = [
 		key: 'reason',
 	},
 	{
-		type: 'string',
+		type: 'Status',
 		value: 'Status',
 		key: 'status',
 	},
@@ -87,48 +75,6 @@ const headers = [
 		key: 'rejectedReason',
 	},
 ]
-
-const listTable = reactive([
-	{
-		id: 1,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: '1d 0h',
-		typeOff: 'Annual leave',
-		reason: 'Examination for military service',
-		status: 'Confirmed',
-		rejectedReason: 'Không cần biết',
-	},
-	{
-		id: 2,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: '1d 0h',
-		typeOff: 'Annual leave',
-		reason: 'Examination for military service',
-		status: 'Confirmed',
-		rejectedReason: 'Không cần biết',
-	},
-	{
-		id: 3,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: '1d 0h',
-		typeOff: 'Annual leave',
-		reason: 'Examination for military service',
-		status: 'Confirmed',
-		rejectedReason: 'Không cần biết',
-	},
-])
 
 const handleSearch = () => {
 	console.log('search')
@@ -201,9 +147,30 @@ const handleReset = () => {
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in listTable" :key="item">
+				<tr v-for="item in requestResultList" :key="item">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
+						<span v-if="header.type === 'dateTime'">
+							{{ formatDay(item[header.key]) }}
+						</span>
+						<span v-if="header.type === 'Status'">
+							{{
+								item[header.key] === 0
+									? 'Not approved yet'
+									: item[header.key] === 1
+									? 'Approved'
+									: item[header.key] === 2
+									? 'Does not accept'
+									: 'Unknown'
+							}}
+						</span>
+						<span v-if="header.key === 'timeOff'">
+							{{
+								!item.amountDay
+									? '0d 0h'
+									: item.amountDay + 'd' + ' ' + item.amountHour + 'h'
+							}}
+						</span>
 					</td>
 				</tr>
 			</tbody>

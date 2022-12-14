@@ -21,7 +21,7 @@ const { userInfo } = storeToRefs(useUserStore())
 
 onMounted(async () => {
 	await getProfile()
-	getWorkingReport(userInfo.value.id)
+	getWorkingReport(userInfo.value.id, '', '')
 })
 
 const entrySelected = ref(25)
@@ -201,6 +201,19 @@ const sortedList = computed(() => {
 		return 0
 	})
 })
+
+const from = ref('');
+const to = ref('');
+
+const handleSearch = async () => {
+	getWorkingReport(userInfo.value.id, from.value, to.value)
+}
+
+const handleReset = async () => {
+	from.value = '';
+	to.value = '';
+	getWorkingReport(userInfo.value.id, '', '')
+}
 </script>
 <template>
 	<div class="working-report-page">
@@ -210,11 +223,11 @@ const sortedList = computed(() => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" />
+				<input type="date" v-model="from" class="search-area-input" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" />
+				<input type="date" v-model="to" class="search-area-input" />
 			</div>
 
 			<div class="action">

@@ -8,6 +8,7 @@ export const useAdminStore = defineStore({
 	state: () => {
 		return {
 			listUser: [],
+			listUserForAccountancy: [],
 			qr: {},
 			departments: []
 		}
@@ -24,9 +25,19 @@ export const useAdminStore = defineStore({
 		},
 		async fetchUser(params) {
 			try {
-				const response = await http.get('/users', {department: params})
+				console.log(params);
+				const response = await http.get('/users', params)
 				this.listUser = response.data.data;
 				return response
+			} catch (error) {
+				console.log(error)
+			}
+		},
+		async fetchUserForAccountancy(params) {
+			try {
+				const response = await http.get('/users/getUserForAccountancy', params)
+				this.listUserForAccountancy = response.data.data;
+				return response.data.data
 			} catch (error) {
 				console.log(error)
 			}

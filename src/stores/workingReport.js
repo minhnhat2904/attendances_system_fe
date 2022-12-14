@@ -12,9 +12,9 @@ export const useWorkingReportStore = defineStore({
 	},
 
 	actions: {
-		async getWorkingReport(userId) {
+		async getWorkingReport(userId, startDate, endDate) {
 			try {
-				const response = await http.get(`/reports?userId=${userId}`)
+				const response = await http.get(`/reports?userId=${userId}&startDate=${startDate}&endDate=${endDate}`)
 				this.workingReport = response.data.data
 			} catch (error) {
 				console.log(error)

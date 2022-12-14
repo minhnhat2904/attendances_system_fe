@@ -1,38 +1,61 @@
 <script setup>
-import { reactive, ref } from 'vue'
+import { reactive, ref, onMounted } from 'vue'
+import { useUserStore } from '@/stores/user.js'
+import { useCreateRequestStore } from '@/stores/createRequest.js'
+import { formatDay } from '../../helper/helper'
+import { storeToRefs } from 'pinia';
+
 
 const isShowModal = ref(false)
 const isConfirm = ref(false)
 const reasonForRefusal = ref('')
+const { getProfile } = useUserStore()
+const { fetchRequestResult, updateRequestOff } = useCreateRequestStore()
+const { userInfo } = storeToRefs(useUserStore())
+const { requestResultList } = storeToRefs(useCreateRequestStore())
+
+const entrySelected = ref(25)
+const entryOptions = reactive([
+	{ text: 10, value: '10' },
+	{ text: 25, value: '25' },
+	{ text: 50, value: '50' },
+	{ text: 100, value: '100' },
+])
+
+onMounted(async () => {
+	await getProfile()
+	fetchRequestResult(userInfo.value.department)
+})
+
+const from = ref('');
+const to = ref('');
+
+const idLeave = ref();
+const typeRequest = ref(0)
+const requestTypes = reactive([
+	{ text: 'Waiting', value: 0 },
+	{ text: 'Approved', value: 1 },
+	{ text: 'Rejected', value: 2 },
+])
 
 const headers = reactive([
 	{
 		type: 'string',
-		text: 'Id',
-		key: 'id',
-	},
-	{
-		type: 'string',
 		value: 'User Name',
-		key: 'userName',
+		key: 'username',
 	},
 	{
-		type: 'string',
-		value: 'Phone number',
-		key: 'phoneNumber',
-	},
-	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'Created',
 		key: 'createdAt',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'From',
 		key: 'startDate',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'To',
 		key: 'endDate',
 	},
@@ -58,63 +81,97 @@ const headers = reactive([
 	},
 ])
 
-const listTable = reactive([
-	{
-		id: 1,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: 'timeOff',
-		typeOff: 'typeOff',
-		reason: 'Examination for military service',
-	},
-	{
-		id: 2,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: 'timeOff',
-		typeOff: 'typeOff',
-		reason: 'Examination for military service',
-	},
-	{
-		id: 3,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: 'timeOff',
-		typeOff: 'typeOff',
-		reason: 'Examination for military service',
-	},
-])
-
-const handleShowAcceptRequest = () => {
+const handleShowAcceptRequest = (id) => {
+	idLeave.value = id;
 	isShowModal.value = true
 	isConfirm.value = true
 }
 
-const handleShowDoesNotAcceptRequest = () => {
+const handleShowDoesNotAcceptRequest = (id) => {
+	idLeave.value = id;
 	isShowModal.value = true
 	isConfirm.value = false
 }
 
-const handleAcceptRequest = () => {}
+const handleAcceptRequest = async () => {
+	const requestBody = {
+		status: 1,
+	}
+	const response = await updateRequestOff(requestBody, idLeave.value);
+	fetchRequestResult(userInfo.value.department, '', 1)
+	isShowModal.value = false
+	isConfirm.value = false
+}
 
-const handleDoesNotAcceptRequest = () => {}
+const handleDoesNotAcceptRequest = async () => {
+	const requestBody = {
+		status: 2,
+
+	}
+	const response = await updateRequestOff(requestBody, idLeave.value);
+	fetchRequestResult(userInfo.value.department,'',2)
+	isShowModal.value = false
+	isConfirm.value = false
+}
 
 const handleCancel = () => {
 	isShowModal.value = false
 	isConfirm.value = false
 }
+
+const handleSearch = async () => {
+	fetchRequestResult(userInfo.value.department, '', typeRequest.value, from.value, to.value, entrySelected.value);
+}
 </script>
 <template>
 	<div class="project-manager p-4">
+		<div class="request-history-header">
+			<h2 class="request-history-title">Request History</h2>
+		</div>
+
+		<details class="search-area">
+			<summary class="search-area-toggle">Search area </summary>
+
+			<div class="search-from">
+				<p><b>From</b></p>
+				<input type="date" class="search-area-input" v-model="from"/>
+			</div>
+			<div class="search-to">
+				<p><b>To</b></p>
+				<input type="date" class="search-area-input" v-model="to"/>
+			</div>
+			<div class="search-status">
+				<p><b>Status</b></p>
+				<select name="requestType" id="requestTypeId" v-model="typeRequest">
+					<option
+						v-for="(type, index) in requestTypes"
+						:key="index"
+						:value="type.value">
+						{{ type.text }}
+					</option>
+				</select>
+			</div>
+			<div class="action">
+				<button class="action-search" @click="handleSearch">Search</button>
+				<button class="action-reset" @click="handleReset">Reset</button>
+			</div>
+		</details>
+
+		<div class="show-list">
+			<span> Show </span>
+			<select
+				name="requestHistoryTable_length"
+				id="reqeustHistoryTableId"
+				v-model="entrySelected">
+				<option
+					v-for="(entry, index) in entryOptions"
+					:key="index"
+					:value="entry.value">
+					{{ entry.text }}
+				</option>
+			</select>
+			<span> entries </span>
+		</div>
 		<table id="tableComponent" class="table table-bordered table-striped">
 			<thead>
 				<tr>
@@ -128,21 +185,44 @@ const handleCancel = () => {
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in listTable" :key="item">
+				<tr v-for="item in requestResultList" :key="item">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
+						<span v-if="header.key === 'timeOff'">
+							{{
+								!item.amountDay
+									? '0d 0h'
+									: item.amountDay + 'd' + ' ' + item.amountHour + 'h'
+							}}
+						</span>
+						<span v-if="header.type === 'dateTime'">
+							{{ formatDay(item[header.key]) }}
+						</span>
+						<span v-if="header.type === 'Status'">
+							{{
+								item[header.key] === 0
+									? 'Not approved yet'
+									: item[header.key] === 1
+									? 'Approved'
+									: item[header.key] === 2
+									? 'Does not accept'
+									: 'Unknown'
+							}}
+						</span>
 						<p v-if="header.type === 'action'" class="d-flex gap-2">
 							<button
 								type="button"
 								class="btn btn-success"
-								@click="handleShowAcceptRequest">
+								:disabled="item.status != 0"
+								@click="handleShowAcceptRequest(item.id)">
 								Accept
 							</button>
 							<button
 								type="button"
 								class="btn btn-danger"
-								@click="handleShowDoesNotAcceptRequest">
-								Doesn't Accept
+								:disabled="item.status != 0"
+								@click="handleShowDoesNotAcceptRequest(item.id)">
+								Unaccept
 							</button>
 						</p>
 					</td>
@@ -193,6 +273,54 @@ const handleCancel = () => {
 </template>
 <style lang="scss" scoped>
 .project-manager {
+	.search-area {
+		.search-to,
+		.search-status,
+		.action {
+			margin-top: 0.5rem;
+		}
+
+		.action {
+			display: flex;
+			gap: 0.2rem;
+
+			button {
+				width: 100px;
+				height: 35px;
+				border: none;
+				padding: 5px;
+				margin-right: 10px;
+				background: #337ab7;
+				color: white;
+				font-weight: 500;
+
+				&:hover {
+					background: #104b80;
+				}
+
+				&:active {
+					background: #053660;
+				}
+			}
+		}
+
+		input,
+		select {
+			width: 600px;
+			height: 40px;
+			padding: 0 0.5rem;
+			border-radius: 5px;
+			border-style: solid;
+			border-width: 1px;
+			border: 1px solid #d9d9d9;
+
+			&:focus {
+				border: 1px solid #9bcbf0;
+				outline: none;
+				box-shadow: #9bcbf0 0px 0px 5px 0px;
+			}
+		}
+	}
 	.table {
 		width: 100%;
 
@@ -249,11 +377,11 @@ const handleCancel = () => {
 	}
 
 	.modal-form {
-		position: absolute;
+		position: fixed;
 		top: 0;
 		left: 0;
-		width: 100vw;
-		height: 100vh;
+		width: 100%;
+		height: 100%;
 		background: rgba(0, 0, 0, 0.271);
 		z-index: 999;
 		.modal-box {

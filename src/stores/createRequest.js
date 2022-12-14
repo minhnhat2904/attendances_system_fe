@@ -14,18 +14,18 @@ export const useCreateRequestStore = defineStore({
 
 	getters: {
 		getRequestResultList() {
-			this.requestResultList.map((request) => {
-				request.createdAt = moment(request.createdAt).format('DD/MM/YYYY hh:mm')
-				return request
-			})
+			// this.requestResultList.map((request) => {
+			// 	request.createdAt = moment(request.createdAt).format('DD/MM/YYYY hh:mm')
+			// 	return request
+			// })
 			return this.requestResultList
 		}
 	},
 
 	actions: {
-		async fetchRequestResult(userId) {
+		async fetchRequestResult(department = '', userId = '', status = 3, startDate = '', endDate = '', limit = 25) {
 			try {
-				const response = await http.get(`/leaves?userId=${userId}&startDate=&endDate=&status=0`)
+				const response = await http.get(`/leaves?department=${department}&userId=${userId}&startDate=${startDate}&endDate=${endDate}&status=${status}&limit=${limit}`)
 				this.requestResultList = response.data.data
 			} catch (error) {
 				console.log(error)

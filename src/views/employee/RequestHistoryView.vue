@@ -14,9 +14,11 @@ const { remainHours, userInfo } = storeToRefs(useUserStore())
 
 onMounted(async () => {
 	await getProfile()
-	fetchRequestResult(userInfo.value.id)
+	fetchRequestResult('', userInfo.value.id, 3, '', '')
 	getRemainHours()
 })
+const from = ref('');
+const to = ref('');
 const currentSort = ref('createdAt')
 const currentSortDir = ref('desc')
 
@@ -28,20 +30,14 @@ const entryOptions = reactive([
 	{ text: 50, value: '50' },
 	{ text: 100, value: '100' },
 ])
-const typeRequest = ref(2)
+const typeRequest = ref(0)
 const requestTypes = reactive([
-	{ text: 'Saved', value: 1 },
-	{ text: 'Approved', value: 2 },
-	{ text: 'Rejected', value: 3 },
-	{ text: 'Replied', value: 4 },
-	{ text: 'Waiting', value: 5 },
+	{ text: 'Waiting', value: 0 },
+	{ text: 'Approved', value: 1 },
+	{ text: 'Rejected', value: 2 },
 ])
 
 const headers = [
-	{
-		type: 'select',
-		value: '',
-	},
 	{
 		type: 'dateTime',
 		value: 'Created',
@@ -77,24 +73,22 @@ const headers = [
 		type: 'Status',
 		value: 'Status',
 		key: 'status',
-	},
-	{
-		type: 'string',
-		value: 'Rejected Reason',
-		key: 'rejectedReason',
-	},
+	}
 ]
 
 const dateTime = computed(() => {
 	return hoursToDaysAndHours(remainHours.value)
 })
 
-const handleSearch = () => {
-	console.log('search')
+const handleSearch = async () => {
+	fetchRequestResult(userInfo.value.department, '', typeRequest.value, from.value, to.value, entrySelected.value);
 }
 
 const handleReset = () => {
-	console.log('reset')
+	from.value = '';
+	to.value = '';
+	typeRequest.value = 0;
+	fetchRequestResult(userInfo.value.department, '', typeRequest.value, from.value, to.value, entrySelected.value);
 }
 
 const sortTable = header => {
@@ -128,11 +122,11 @@ const sortedList = computed(() => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" />
+				<input type="date" class="search-area-input" v-model="from"/>
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" />
+				<input type="date" class="search-area-input" v-model="to"/>
 			</div>
 			<div class="search-status">
 				<p><b>Status</b></p>
@@ -199,11 +193,11 @@ const sortedList = computed(() => {
 						<span v-if="header.type === 'Status'">
 							{{
 								item[header.key] === 0
-									? 'Not approved yet'
+									? 'Waiting'
 									: item[header.key] === 1
 									? 'Approved'
 									: item[header.key] === 2
-									? 'Does not accept'
+									? 'Rejected'
 									: 'Unknown'
 							}}
 						</span>
