@@ -16,7 +16,7 @@ const { remainHours, userInfo } = storeToRefs(useUserStore())
 
 onMounted(async () => {
 	await getProfile()
-	fetchRequestResult(userInfo.value.id)
+	fetchRequestResult('', userInfo.value.id, 3, '', '')
 	getRemainHours()
 })
 const currentSort = ref('createdAt')
@@ -30,20 +30,14 @@ const entryOptions = reactive([
 	{ text: 50, value: '50' },
 	{ text: 100, value: '100' },
 ])
-const typeRequest = ref(2)
+const typeRequest = ref(0)
 const requestTypes = reactive([
-	{ text: 'Saved', value: 1 },
-	{ text: 'Approved', value: 2 },
-	{ text: 'Rejected', value: 3 },
-	{ text: 'Replied', value: 4 },
-	{ text: 'Waiting', value: 5 },
+	{ text: 'Waiting', value: 0 },
+	{ text: 'Approved', value: 1 },
+	{ text: 'Rejected', value: 2 },
 ])
 
 const headers = [
-	{
-		type: 'select',
-		value: '',
-	},
 	{
 		type: 'dateTime',
 		value: 'Created',
@@ -80,11 +74,6 @@ const headers = [
 		value: 'Status',
 		key: 'status',
 	},
-	{
-		type: 'string',
-		value: 'Rejected Reason',
-		key: 'rejectedReason',
-	},
 ]
 
 const dateTime = computed(() => {
@@ -110,7 +99,14 @@ const handleSearch = async () => {
 	const result = await v$.value.$validate()
 
 	if (result) {
-		// await
+		await fetchRequestResult(
+			userInfo.value.department,
+			'',
+			typeRequest.value,
+			filterWorkingReport.from,
+			filterWorkingReport.to,
+			entrySelected.value
+		)
 	} else {
 		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
 			timeout: 2000,
@@ -118,8 +114,18 @@ const handleSearch = async () => {
 	}
 }
 
-const handleReset = () => {
-	console.log('reset')
+const handleReset = async () => {
+	filterWorkingReport.from = ''
+	filterWorkingReport.to = ''
+	typeRequest.value = 0
+	await fetchRequestResult(
+		userInfo.value.department,
+		'',
+		typeRequest.value,
+		filterWorkingReport.from,
+		filterWorkingReport.to,
+		entrySelected.value
+	)
 }
 
 const sortTable = header => {
@@ -230,11 +236,11 @@ const sortedList = computed(() => {
 						<span v-if="header.type === 'Status'">
 							{{
 								item[header.key] === 0
-									? 'Not approved yet'
+									? 'Waiting'
 									: item[header.key] === 1
 									? 'Approved'
 									: item[header.key] === 2
-									? 'Does not accept'
+									? 'Rejected'
 									: 'Unknown'
 							}}
 						</span>

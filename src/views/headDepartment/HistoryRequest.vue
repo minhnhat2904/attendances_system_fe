@@ -6,6 +6,7 @@ import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { useVuelidate } from '@vuelidate/core'
 import { required, minValue } from '@vuelidate/validators'
 import { useToast } from 'vue-toastification'
+import { formatDay } from '../../helper/helper'
 
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
@@ -14,10 +15,9 @@ const { requestResultList } = storeToRefs(useCreateRequestStore())
 
 onMounted(async () => {
 	await getProfile()
-	fetchRequestResult(userInfo.value.id)
+	fetchRequestResult()
 })
 
-const checkbox = ref('')
 const entrySelected = ref(25)
 const entryOptions = reactive([
 	{ text: 10, value: '10' },
@@ -36,32 +36,18 @@ const requestTypes = reactive([
 
 const headers = [
 	{
-		type: 'string',
-		value: 'Id',
-		key: 'id',
-	},
-	{
-		type: 'string',
-		value: 'User Name',
-		key: 'userName',
-	},
-	{
-		type: 'string',
-		value: 'Phone number',
-		key: 'phoneNumber',
-	},
-	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'Created',
 		key: 'createdAt',
+		id: '',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'From',
 		key: 'startDate',
 	},
 	{
-		type: 'string',
+		type: 'dateTime',
 		value: 'To',
 		key: 'endDate',
 	},
@@ -81,7 +67,7 @@ const headers = [
 		key: 'reason',
 	},
 	{
-		type: 'string',
+		type: 'Status',
 		value: 'Status',
 		key: 'status',
 	},
@@ -92,57 +78,15 @@ const headers = [
 	},
 ]
 
-const listTable = reactive([
-	{
-		id: 1,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: '1d 0h',
-		typeOff: 'Annual leave',
-		reason: 'Examination for military service',
-		status: 'Confirmed',
-		rejectedReason: 'Không cần biết',
-	},
-	{
-		id: 2,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: '1d 0h',
-		typeOff: 'Annual leave',
-		reason: 'Examination for military service',
-		status: 'Confirmed',
-		rejectedReason: 'Không cần biết',
-	},
-	{
-		id: 3,
-		userName: 'Name 1',
-		phoneNumber: '0987653132',
-		createdAt: 'createdAt',
-		startDate: 'startDate',
-		endDate: 'endDate',
-		timeOff: '1d 0h',
-		typeOff: 'Annual leave',
-		reason: 'Examination for military service',
-		status: 'Confirmed',
-		rejectedReason: 'Không cần biết',
-	},
-])
-
 const filterWorkingReport = reactive({
-	periodFrom: '',
-	periodTo: '',
+	from: '',
+	to: '',
 })
 
 const rules = computed(() => {
 	return {
-		periodFrom: { required },
-		periodTo: { required, minValue: minValue(filterWorkingReport.from) },
+		from: { required },
+		to: { required, minValue: minValue(filterWorkingReport.from) },
 	}
 })
 
@@ -174,11 +118,17 @@ const handleReset = () => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" v-model="periodFrom" />
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterWorkingReport.from" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" v-model="periodTo" />
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterWorkingReport.to" />
 			</div>
 			<div class="search-status">
 				<p><b>Status</b></p>
@@ -225,9 +175,30 @@ const handleReset = () => {
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in listTable" :key="item">
+				<tr v-for="item in requestResultList" :key="item">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
+						<span v-if="header.type === 'dateTime'">
+							{{ formatDay(item[header.key]) }}
+						</span>
+						<span v-if="header.type === 'Status'">
+							{{
+								item[header.key] === 0
+									? 'Not approved yet'
+									: item[header.key] === 1
+									? 'Approved'
+									: item[header.key] === 2
+									? 'Does not accept'
+									: 'Unknown'
+							}}
+						</span>
+						<span v-if="header.key === 'timeOff'">
+							{{
+								!item.amountDay
+									? '0d 0h'
+									: item.amountDay + 'd' + ' ' + item.amountHour + 'h'
+							}}
+						</span>
 					</td>
 				</tr>
 			</tbody>

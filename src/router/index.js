@@ -97,6 +97,12 @@ const router = createRouter({
 			meta: { layout: 'defaultLayout' },
 			component: ListUser,
 		},
+		{
+			path: '/accountant/amountHourWork',
+			name: 'amountHourWork',
+			meta: { layout: 'defaultLayout' },
+			component: () => import('../views/accountant/ListAmountHourWork.vue'),
+		},
 	],
 })
 

@@ -24,7 +24,7 @@ const { userInfo } = storeToRefs(useUserStore())
 
 onMounted(async () => {
 	await getProfile()
-	getWorkingReport(userInfo.value.id)
+	getWorkingReport(userInfo.value.id, '', '')
 })
 
 const entrySelected = ref(25)
@@ -41,14 +41,14 @@ const queryParamsWorkingReport = reactive({
 })
 
 const filterWorkingReport = reactive({
-	periodFrom: '',
-	periodTo: '',
+	from: '',
+	to: '',
 })
 
 const rulesFilter = computed(() => {
 	return {
-		periodFrom: { required },
-		periodTo: { required, minValue: minValue(filterWorkingReport.from) },
+		from: { required },
+		to: { required, minValue: minValue(filterWorkingReport.from) },
 	}
 })
 
@@ -134,7 +134,11 @@ const handleSearch = async () => {
 	const result = await v2$.value.$validate()
 
 	if (result) {
-		// await
+		await getWorkingReport(
+			userInfo.value.id,
+			filterWorkingReport.from,
+			filterWorkingReport.to
+		)
 	} else {
 		toast.error(
 			`${v2$.value.$errors[0].$property}-${v2$.value.$errors[0].$message}`,
@@ -264,6 +268,12 @@ const sortedList = computed(() => {
 		return 0
 	})
 })
+
+const handleReset = async () => {
+	from.value = ''
+	to.value = ''
+	getWorkingReport(userInfo.value.id, '', '')
+}
 </script>
 <template>
 	<div class="working-report-page">
@@ -276,14 +286,14 @@ const sortedList = computed(() => {
 				<input
 					type="date"
 					class="search-area-input"
-					v-model="filterWorkingReport.periodFrom" />
+					v-model="filterWorkingReport.from" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
 				<input
 					type="date"
 					class="search-area-input"
-					v-model="filterWorkingReport.periodTo" />
+					v-model="filterWorkingReport.to" />
 			</div>
 
 			<div class="action">

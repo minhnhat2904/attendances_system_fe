@@ -4,14 +4,14 @@ import { useAdminStore } from '@/stores/admin.js'
 import { storeToRefs } from 'pinia'
 
 const {
-	fetchUser,
+	fetchUserForAccountancy,
 	fetchDeparments,
 } = useAdminStore()
 
-const { listUser, departments } = storeToRefs(useAdminStore())
+const { listUserForAccountancy, departments } = storeToRefs(useAdminStore())
 
 onMounted(async () => {
-	fetchUser()
+	fetchUserForAccountancy()
 	fetchDeparments()
 })
 
@@ -73,18 +73,13 @@ const headers = reactive([
 	},
 	{
 		type: 'string',
-		text: 'Phone',
-		key: 'phone',
+		text: 'Hours off annual',
+		key: 'hours_off_annual',
 	},
 	{
 		type: 'string',
-		text: 'Address',
-		key: 'address',
-	},
-	{
-		type: 'string',
-		text: 'Role',
-		key: 'role',
+		text: 'Hours off unpaid',
+		key: 'hours_off_unpaid',
 	}
 ])
 
@@ -104,7 +99,7 @@ const username = ref('');
 				</option>
 			</select>
 			Username: <input type="text" v-model="username">
-			<button @click="fetchUser({department: department, username: username})"> Search </button>
+			<button @click="fetchUserForAccountancy({department: department, username: username})"> Search </button>
 		<table id="tableComponent" class="table table-bordered table-striped">
 			<thead>
 				<tr>
@@ -118,7 +113,7 @@ const username = ref('');
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in listUser" :key="item" class="table-body py-1 px-2">
+				<tr v-for="item in listUserForAccountancy" :key="item" class="table-body py-1 px-2">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
 					</td>
