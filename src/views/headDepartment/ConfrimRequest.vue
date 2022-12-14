@@ -1,14 +1,15 @@
 <script setup>
-import { reactive, ref, onMounted } from 'vue'
+import { reactive, ref, onMounted, computed } from 'vue'
+import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
 import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { formatDay } from '../../helper/helper'
-import { storeToRefs } from 'pinia';
-
+import { useVuelidate } from '@vuelidate/core'
+import { required } from '@vuelidate/validators'
+import { useToast } from 'vue-toastification'
 
 const isShowModal = ref(false)
 const isConfirm = ref(false)
-const reasonForRefusal = ref('')
 const { getProfile } = useUserStore()
 const { fetchRequestResult, updateRequestOff } = useCreateRequestStore()
 const { userInfo } = storeToRefs(useUserStore())
@@ -22,16 +23,7 @@ const entryOptions = reactive([
 	{ text: 100, value: '100' },
 ])
 
-onMounted(async () => {
-	await getProfile()
-	fetchRequestResult(userInfo.value.department)
-})
-
-const from = ref('');
-const to = ref('');
-
-const idLeave = ref();
-const typeRequest = ref(0)
+const idLeave = ref()
 const requestTypes = reactive([
 	{ text: 'Waiting', value: 0 },
 	{ text: 'Approved', value: 1 },
@@ -81,14 +73,35 @@ const headers = reactive([
 	},
 ])
 
-const handleShowAcceptRequest = (id) => {
-	idLeave.value = id;
+const filterConfirmRequest = reactive({
+	from: '',
+	to: '',
+	typeRequest: 0,
+})
+
+const rules = computed(() => {
+	return {
+		from: { required },
+		to: { required },
+		typeRequest: { required },
+	}
+})
+
+const v$ = useVuelidate(rules, filterConfirmRequest)
+
+onMounted(async () => {
+	await getProfile()
+	fetchRequestResult(userInfo.value.department)
+})
+
+const handleShowAcceptRequest = id => {
+	idLeave.value = id
 	isShowModal.value = true
 	isConfirm.value = true
 }
 
-const handleShowDoesNotAcceptRequest = (id) => {
-	idLeave.value = id;
+const handleShowDoesNotAcceptRequest = id => {
+	idLeave.value = id
 	isShowModal.value = true
 	isConfirm.value = false
 }
@@ -97,7 +110,7 @@ const handleAcceptRequest = async () => {
 	const requestBody = {
 		status: 1,
 	}
-	const response = await updateRequestOff(requestBody, idLeave.value);
+	await updateRequestOff(requestBody, idLeave.value)
 	fetchRequestResult(userInfo.value.department, '', 1)
 	isShowModal.value = false
 	isConfirm.value = false
@@ -106,10 +119,9 @@ const handleAcceptRequest = async () => {
 const handleDoesNotAcceptRequest = async () => {
 	const requestBody = {
 		status: 2,
-
 	}
-	const response = await updateRequestOff(requestBody, idLeave.value);
-	fetchRequestResult(userInfo.value.department,'',2)
+	await updateRequestOff(requestBody, idLeave.value)
+	fetchRequestResult(userInfo.value.department, '', 2)
 	isShowModal.value = false
 	isConfirm.value = false
 }
@@ -120,13 +132,29 @@ const handleCancel = () => {
 }
 
 const handleSearch = async () => {
-	fetchRequestResult(userInfo.value.department, '', typeRequest.value, from.value, to.value, entrySelected.value);
+	const toast = useToast()
+	const result = await v$.value.$validate()
+
+	if (result) {
+		await fetchRequestResult(
+			userInfo.value.department,
+			'',
+			filterConfirmRequest.typeRequest,
+			filterConfirmRequest.from,
+			filterConfirmRequest.to,
+			entrySelected.value
+		)
+	} else {
+		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
+			timeout: 2000,
+		})
+	}
 }
 </script>
 <template>
 	<div class="project-manager p-4">
 		<div class="request-history-header">
-			<h2 class="request-history-title">Request History</h2>
+			<h3><b>Request History</b></h3>
 		</div>
 
 		<details class="search-area">
@@ -134,15 +162,25 @@ const handleSearch = async () => {
 
 			<div class="search-from">
 				<p><b>From</b></p>
-				<input type="date" class="search-area-input" v-model="from"/>
+				<input
+					type="date"
+					class="search-area-input"
+					v-model="filterConfirmRequest.from" />
 			</div>
 			<div class="search-to">
 				<p><b>To</b></p>
-				<input type="date" class="search-area-input" v-model="to"/>
+				<input
+					type="date"
+					:min="filterConfirmRequest.from"
+					class="search-area-input"
+					v-model="filterConfirmRequest.to" />
 			</div>
 			<div class="search-status">
 				<p><b>Status</b></p>
-				<select name="requestType" id="requestTypeId" v-model="typeRequest">
+				<select
+					name="requestType"
+					id="requestTypeId"
+					v-model="filterConfirmRequest.typeRequest">
 					<option
 						v-for="(type, index) in requestTypes"
 						:key="index"
@@ -151,13 +189,13 @@ const handleSearch = async () => {
 					</option>
 				</select>
 			</div>
-			<div class="action">
-				<button class="action-search" @click="handleSearch">Search</button>
-				<button class="action-reset" @click="handleReset">Reset</button>
+			<div class="d-flex gap-3 mt-4">
+				<button class="btn btn-success px-4" @click="handleSearch">Search</button>
+				<button class="btn btn-danger px-4" @click="handleReset">Reset</button>
 			</div>
 		</details>
 
-		<div class="show-list">
+		<div class="show-list mt-3 mb-3">
 			<span> Show </span>
 			<select
 				name="requestHistoryTable_length"
@@ -240,30 +278,29 @@ const handleSearch = async () => {
 				</div>
 				<div class="body d-flex justify-content-start">
 					<div v-if="isConfirm">
-						<span>Accept request</span>
+						<h6>Accept request</h6>
 					</div>
 					<div v-else class="d-flex flex-column">
-						<p>Reason for refusal</p>
-						<input type="text" v-model="reasonForRefusal" />
+						<h5>Does Not Accept Request</h5>
 					</div>
 				</div>
 
 				<div class="footer">
 					<button
 						type="button"
-						class="btn btn-outline-success"
+						class="btn btn-success px-4"
 						@click="handleAcceptRequest"
 						v-if="isConfirm">
 						Accept
 					</button>
 					<button
 						type="button"
-						class="btn btn-outline-success"
+						class="btn btn-success px-4"
 						@click="handleDoesNotAcceptRequest"
 						v-else>
 						Confrim
 					</button>
-					<button type="button" class="btn btn-outline-danger" @click="handleCancel">
+					<button type="button" class="btn btn-danger px-4" @click="handleCancel">
 						Cancel
 					</button>
 				</div>

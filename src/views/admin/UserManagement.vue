@@ -241,18 +241,6 @@ const sortedList = computed(() => {
 <template>
 	<div class="user-manager p-4">
 		<div>
-			<div class="form-input-file d-flex gap-2">
-				<input
-					type="file"
-					ref="fileInput"
-					@change="handleCreateUserByUpload($event)"
-					hidden />
-				<button
-					class="btn-create border-0 py-2 px-3 bg-green btn btn-success"
-					@click="$refs.fileInput.click()">
-					Create user by upload
-				</button>
-			</div>
 			<h3 v-if="isEditing === false"><p id="create-title">Create User Manual</p></h3>
 			<h3 v-else><p id="create-title">Update User</p></h3>
 			<div class="form-input d-flex flex-column gap-2">
@@ -333,18 +321,32 @@ const sortedList = computed(() => {
 			</div>
 		</div>
 		<div>
-			<br />
-			<br />
 			<p>Search with department</p>
-			<select v-model="department" @change="fetchUser(department)">
-				<option
-					v-for="department in departments"
-					:key="department.name"
-					:value="department.id">
-					{{ department.name }}
-				</option>
-			</select>
-			<table class="table-user mt-3">
+			<div class="d-flex justify-content-between">
+				<select v-model="department" @change="fetchUser(department)">
+					<option
+						v-for="department in departments"
+						:key="department.name"
+						:value="department.id">
+						{{ department.name }}
+					</option>
+				</select>
+				<div class="form-input-file d-flex gap-2">
+					<input
+						type="file"
+						ref="fileInput"
+						@change="handleCreateUserByUpload($event)"
+						hidden />
+					<button
+						class="btn-create border-0 py-2 px-3 btn btn-primary"
+						@click="$refs.fileInput.click()">
+						Create user by upload
+					</button>
+				</div>
+			</div>
+		</div>
+		<table class="table-user mt-3 w-100">
+			<thead>
 				<tr>
 					<th
 						v-for="header in headers"
@@ -354,6 +356,11 @@ const sortedList = computed(() => {
 						{{ header.text }}
 					</th>
 				</tr>
+			</thead>
+			<tbody v-if="listUser.length == 0">
+				<tr class="border"> <p class="px-2 py-2"> No data here... </p></tr>
+			</tbody>
+			<tbody v-else>
 				<tr v-for="item in listUser" :key="item" class="table-body py-1 px-2">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
@@ -371,13 +378,8 @@ const sortedList = computed(() => {
 						</p>
 					</td>
 				</tr>
-			</table>
-			<div
-				v-if="listUser.length == 0"
-				style="text-align: center; border: solid 1px gray; padding: 1rem">
-				<span>No data here...</span>
-			</div>
-		</div>
+			</tbody>
+		</table>
 	</div>
 </template>
 

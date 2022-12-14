@@ -62,11 +62,7 @@ const logoutFn = async () => {
 
 <style lang="scss" scoped>
 .layout-default {
-	display: flex;
-	flex-direction: column;
-	justify-content: space-between;
 	z-index: 900;
-	position: relative;
 	width: 100%;
 	height: 100vh;
 
@@ -75,8 +71,8 @@ const logoutFn = async () => {
 		justify-content: space-between;
 		align-items: center;
 		padding: 0px 20px;
-		height: 60px;
-		background: var(--bkrg-gradient-vue);
+		height: 56px !important;
+		background: #337ab7;
 
 		.icon-logout {
 			color: white;
@@ -89,7 +85,6 @@ const logoutFn = async () => {
 	&_main {
 		display: flex;
 		height: calc(100vh - 140px);
-		height: 100%;
 
 		.layout-default_content {
 			width: 100%;

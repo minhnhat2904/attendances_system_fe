@@ -260,7 +260,11 @@ const handleResetRequest = () => {
 
 			<div class="type-off">
 				<span><b>Type off</b></span>
-				<select name="dayOffType" id="id_dayOffType" v-model="leave.typeOffSelected">
+				<select
+					name="dayOffType"
+					id="id_dayOffType"
+					v-model="leave.typeOffSelected"
+					class="w-50">
 					<option
 						v-for="(typeOff, index) in typeOff"
 						:key="index"
@@ -272,7 +276,11 @@ const handleResetRequest = () => {
 
 			<div class="reason">
 				<span><b>Reason</b></span>
-				<select name="reasonType" id="id_reasonType" v-model="leave.reasonSelected">
+				<select
+					name="reasonType"
+					id="id_reasonType"
+					v-model="leave.reasonSelected"
+					class="w-50">
 					<option
 						v-for="(reason, index) in reasonOff"
 						:key="index"
@@ -284,17 +292,14 @@ const handleResetRequest = () => {
 
 			<div class="reason-detail">
 				<span><b>Reason details</b></span>
-				<input type="textarea" v-model="leave.reasonDetail" />
+				<input type="textarea" v-model="leave.reasonDetail" class="w-50" />
 			</div>
 
-			<div class="action mt-3">
-				<button class="btn btn-success send-request" @click="handleSendRequest">
+			<div class="mt-3 d-flex gap-3">
+				<button class="btn btn-success px-4" @click="handleSendRequest">
 					Create
 				</button>
-				<button
-					type="button"
-					class="reset-request btn btn-primary"
-					@click="handleResetRequest"
+				<button type="button" class="btn btn-danger px-4" @click="handleResetRequest"
 					>Reset</button
 				>
 			</div>
@@ -353,16 +358,6 @@ const handleResetRequest = () => {
 		display: flex;
 		flex-direction: column;
 		gap: 0.2rem;
-	}
-
-	.send-request,
-	.reset-request {
-		width: 100px;
-		border: none;
-		padding: 5px;
-		margin-right: 10px;
-		color: white;
-		font-weight: 500;
 	}
 
 	input,

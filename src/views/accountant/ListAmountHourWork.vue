@@ -3,10 +3,7 @@ import { reactive, ref, onMounted, computed } from 'vue'
 import { useAdminStore } from '@/stores/admin.js'
 import { storeToRefs } from 'pinia'
 
-const {
-	fetchUserForAccountancy,
-	fetchDeparments,
-} = useAdminStore()
+const { fetchUserForAccountancy, fetchDeparments } = useAdminStore()
 
 const { listUserForAccountancy, departments } = storeToRefs(useAdminStore())
 
@@ -15,7 +12,7 @@ onMounted(async () => {
 	fetchDeparments()
 })
 
-const department = ref('');
+const department = ref('')
 
 const roleList = reactive([
 	{
@@ -80,16 +77,19 @@ const headers = reactive([
 		type: 'string',
 		text: 'Hours off unpaid',
 		key: 'hours_off_unpaid',
-	}
+	},
 ])
 
-const username = ref('');
+const username = ref('')
 </script>
 
 <template>
 	<div class="create-qr p-4">
-		<p>Search with condition</p>
-			Department
+		<h5>Search with condition</h5>
+		<div class="mt-3 d-flex gap-2">
+			<span><b>Username:</b></span>
+			<input type="text" v-model="username" />
+			<span><b>Department</b></span>
 			<select v-model="department">
 				<option
 					v-for="department in departments"
@@ -98,8 +98,16 @@ const username = ref('');
 					{{ department.name }}
 				</option>
 			</select>
-			Username: <input type="text" v-model="username">
-			<button @click="fetchUserForAccountancy({department: department, username: username})"> Search </button>
+		</div>
+		<div class="m-3">
+			<button
+				class="btn btn-primary px-4"
+				@click="
+					fetchUserForAccountancy({ department: department, username: username })
+				">
+				Search
+			</button>
+		</div>
 		<table id="tableComponent" class="table table-bordered table-striped">
 			<thead>
 				<tr>
@@ -113,7 +121,10 @@ const username = ref('');
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in listUserForAccountancy" :key="item" class="table-body py-1 px-2">
+				<tr
+					v-for="item in listUserForAccountancy"
+					:key="item"
+					class="table-body py-1 px-2">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
 					</td>
@@ -123,6 +134,22 @@ const username = ref('');
 	</div>
 </template>
 <style lang="scss" scoped>
+input,
+select {
+	width: 300px;
+	height: 40px;
+	padding: 0 0.5rem;
+	border-radius: 5px;
+	border-style: solid;
+	border-width: 1px;
+	border: 1px solid #d9d9d9;
+
+	&:focus {
+		border: 1px solid #9bcbf0;
+		outline: none;
+		box-shadow: #9bcbf0 0px 0px 5px 0px;
+	}
+}
 .table {
 	width: 100%;
 

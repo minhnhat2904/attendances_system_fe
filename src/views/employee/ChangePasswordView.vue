@@ -69,9 +69,11 @@ const handleReset = () => {
 				<input type="password" v-model="formData.repeatNewPassword" class="input" />
 			</div>
 		</div>
-		<div class="btn-handle">
-			<button @click="handleChangePassword">Save</button>
-			<button @click="handleReset">Reset</button>
+		<div class="d-flex gap-3 mt-3">
+			<button class="btn btn-success px-4" @click="handleChangePassword"
+				>Save</button
+			>
+			<button class="btn btn-danger px-4" @click="handleReset">Reset</button>
 		</div>
 	</div>
 </template>
@@ -106,28 +108,6 @@ const handleReset = () => {
 		p {
 			font-weight: 600;
 			margin-bottom: 0;
-		}
-	}
-	.btn-handle {
-		margin-top: 0.5rem;
-
-		button {
-			width: 100px;
-			height: 35px;
-			border: none;
-			padding: 5px;
-			margin-right: 10px;
-			background: #337ab7;
-			color: white;
-			font-weight: 500;
-
-			&:hover {
-				background: #104b80;
-			}
-
-			&:active {
-				background: #053660;
-			}
 		}
 	}
 }

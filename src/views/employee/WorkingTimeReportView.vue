@@ -6,7 +6,7 @@ import { useUserStore } from '@/stores/user.js'
 import { useAttendanceStore } from '@/stores/attendances.js'
 import { useWorkingReportStore } from '@/stores/workingReport.js'
 import { useVuelidate } from '@vuelidate/core'
-import { required, numeric, minLength, minValue } from '@vuelidate/validators'
+import { required, numeric, minLength } from '@vuelidate/validators'
 import { useToast } from 'vue-toastification'
 
 // const { get } = useAttendanceStore()
@@ -48,7 +48,7 @@ const filterWorkingReport = reactive({
 const rulesFilter = computed(() => {
 	return {
 		from: { required },
-		to: { required, minValue: minValue(filterWorkingReport.from) },
+		to: { required },
 	}
 })
 
@@ -60,7 +60,6 @@ const rules = computed(() => {
 		note: { required, minLength: minLength(13) },
 		date: { required },
 		ticket: { required, numeric, minLength: minLength(3) },
-		workingreportId: { required },
 		project: { required },
 		task: { required },
 	}
@@ -211,7 +210,7 @@ const handleUpdateWorkingReport = async () => {
 		)
 
 		if (response.data.status === true) {
-			await getWorkingReport(userInfo.value.id)
+			await getWorkingReport(userInfo.value.id, '', '')
 			clearInput()
 			isEditMode.value = false
 			isShowModal.value = false
@@ -239,7 +238,7 @@ const handleDeleteWorkingReport = async id => {
 	}
 	const result = await deleteWorkingReport(requestBody)
 	if (result.data.status === true) {
-		await getWorkingReport(userInfo.value.id)
+		await getWorkingReport(userInfo.value.id, '', '')
 	}
 }
 
@@ -270,13 +269,15 @@ const sortedList = computed(() => {
 })
 
 const handleReset = async () => {
-	from.value = ''
-	to.value = ''
+	filterWorkingReport.from = ''
+	filterWorkingReport.to = ''
 	getWorkingReport(userInfo.value.id, '', '')
 }
 </script>
 <template>
 	<div class="working-report-page">
+		{{ filterWorkingReport.from }}
+		{{ filterWorkingReport.to }}
 		<h3><b>Working time report</b></h3>
 		<details class="search-area">
 			<summary class="search-area-toggle">Search area </summary>
@@ -292,17 +293,20 @@ const handleReset = async () => {
 				<p><b>To</b></p>
 				<input
 					type="date"
+					:min="filterWorkingReport.from"
 					class="search-area-input"
 					v-model="filterWorkingReport.to" />
 			</div>
 
-			<div class="action">
-				<button class="action-search" @click="handleSearch">Search</button>
-				<button class="action-reset" @click="handleReset">Reset</button>
+			<div class="d-flex gap-3 mt-3">
+				<button class="btn btn-primary px-4" @click="handleSearch">Search</button>
+				<button class="btn btn-danger px-4" @click="handleReset">Reset</button>
 			</div>
 		</details>
 
-		<button class="btn-create" @click="handleShowModalCreate">Create Report</button>
+		<button class="btn btn-success px-4 mt-4" @click="handleShowModalCreate">
+			Create Report
+		</button>
 
 		<div class="show-list">
 			<span> Show </span>
@@ -414,15 +418,18 @@ const handleReset = async () => {
 
 				<div class="footer">
 					<button
-						class="btn-save"
+						class="btn btn-success px-4"
 						@click="handleSaveWorkingReport"
 						v-if="isEditMode === false">
 						Save
 					</button>
-					<button class="btn-save" @click="handleUpdateWorkingReport" v-else>
+					<button
+						class="btn btn-success px-4"
+						@click="handleUpdateWorkingReport"
+						v-else>
 						Update
 					</button>
-					<button class="btn-cancel" @click="handleCancel"> Cancel </button>
+					<button class="btn btn-danger px-4" @click="handleCancel"> Cancel </button>
 				</div>
 			</div>
 		</div>
@@ -435,33 +442,8 @@ const handleReset = async () => {
 
 	.search-area {
 		.search-to,
-		.search-status,
-		.action {
+		.search-status {
 			margin-top: 0.5rem;
-		}
-
-		.action {
-			display: flex;
-			gap: 0.2rem;
-
-			button {
-				width: 100px;
-				height: 35px;
-				border: none;
-				padding: 5px;
-				margin-right: 10px;
-				background: #337ab7;
-				color: white;
-				font-weight: 500;
-
-				&:hover {
-					background: #104b80;
-				}
-
-				&:active {
-					background: #053660;
-				}
-			}
 		}
 
 		input,
@@ -479,26 +461,6 @@ const handleReset = async () => {
 				outline: none;
 				box-shadow: #9bcbf0 0px 0px 5px 0px;
 			}
-		}
-	}
-
-	.btn-create {
-		margin-top: 1rem;
-		width: 100px;
-		height: 35px;
-		border: none;
-		padding: 5px;
-		margin-right: 10px;
-		background: #337ab7;
-		color: white;
-		font-weight: 500;
-
-		&:hover {
-			background: #104b80;
-		}
-
-		&:active {
-			background: #053660;
 		}
 	}
 	.show-list {
@@ -655,29 +617,7 @@ const handleReset = async () => {
 				align-items: center;
 				padding: 0 0.5rem;
 				gap: 0.5rem;
-
-				.btn-save {
-					background: #4cd137;
-
-					&:hover {
-						background: #299718;
-					}
-				}
-				.btn-cancel {
-					background: #e74c3c;
-
-					&:hover {
-						background: #bb2919;
-					}
-				}
 			}
-		}
-		button {
-			width: 100px;
-			height: 35px;
-			font-weight: bold;
-			color: white;
-			border: none;
 		}
 	}
 }

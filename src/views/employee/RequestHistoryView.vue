@@ -6,7 +6,7 @@ import { useCreateRequestStore } from '@/stores/createRequest.js'
 import { computed, onMounted, reactive, ref } from 'vue'
 import { hoursToDaysAndHours } from '@/helper/helper.js'
 import { useVuelidate } from '@vuelidate/core'
-import { required, minValue } from '@vuelidate/validators'
+import { required } from '@vuelidate/validators'
 import { useToast } from 'vue-toastification'
 const { getProfile } = useUserStore()
 const { fetchRequestResult } = useCreateRequestStore()
@@ -88,7 +88,7 @@ const filterWorkingReport = reactive({
 const rules = computed(() => {
 	return {
 		from: { required },
-		to: { required, minValue: minValue(filterWorkingReport.from) },
+		to: { required },
 	}
 })
 
@@ -168,6 +168,7 @@ const sortedList = computed(() => {
 				<p><b>To</b></p>
 				<input
 					type="date"
+					:min="filterWorkingReport.from"
 					class="search-area-input"
 					v-model="filterWorkingReport.to" />
 			</div>
@@ -182,9 +183,9 @@ const sortedList = computed(() => {
 					</option>
 				</select>
 			</div>
-			<div class="action">
-				<button class="action-search" @click="handleSearch">Search</button>
-				<button class="action-reset" @click="handleReset">Reset</button>
+			<div class="d-flex gap-3 mt-4">
+				<button class="btn btn-primary px-4" @click="handleSearch">Search</button>
+				<button class="btn btn-danger px-4" @click="handleReset">Reset</button>
 			</div>
 		</details>
 
@@ -258,30 +259,6 @@ const sortedList = computed(() => {
 		.search-status,
 		.action {
 			margin-top: 0.5rem;
-		}
-
-		.action {
-			display: flex;
-			gap: 0.2rem;
-
-			button {
-				width: 100px;
-				height: 35px;
-				border: none;
-				padding: 5px;
-				margin-right: 10px;
-				background: #337ab7;
-				color: white;
-				font-weight: 500;
-
-				&:hover {
-					background: #104b80;
-				}
-
-				&:active {
-					background: #053660;
-				}
-			}
 		}
 
 		input,
