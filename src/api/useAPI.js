@@ -12,9 +12,9 @@ export const useApi = (endpoint = 'api') => {
 	let baseURL
 
 	if (endpoint === 'api') {
-		baseURL = API_HOST + API_PATH || 'http://localhost:8000/api'
+		baseURL = API_HOST + API_PATH || 'https://attendances.onrender.com/api'
 	} else if (endpoint === 'web') {
-		baseURL = API_HOST || 'http://localhost:8000'
+		baseURL = API_HOST || 'https://attendances.onrender.com'
 	}
 
 	const axiosInstance = axios.create({
