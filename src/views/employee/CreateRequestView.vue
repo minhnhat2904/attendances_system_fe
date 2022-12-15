@@ -37,23 +37,21 @@ const rules = computed(() => {
 	return {
 		offDays: {
 			required,
-			numeric,
 			maxValue: maxValue(15),
 		},
 		offHours: {
 			required,
-			numeric,
 			maxValue: maxValue(8),
 		},
 		periodFrom: { required },
-		periodTo: { required, minValue: maxValue(leave.periodFrom) },
+		periodTo: { required },
 		typeOffSelected: { required },
 		hourFromSelected: { required },
 		minuteFromSelected: { required },
 		hourToSelected: { required },
 		minuteToSelected: { required },
 		reasonSelected: { required },
-		reasonDetail: { required, minLength: minLength(12) },
+		reasonDetail: { required, minLength: minLength(5) },
 	}
 })
 

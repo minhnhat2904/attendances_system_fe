@@ -8,10 +8,19 @@ import ListUser from '../views/accountant/ListUser.vue'
 import UserManagement from '../views/admin/UserManagement.vue'
 import CreateRequestView from '../views/employee/CreateRequestView.vue'
 import HistoryRequest from '../views/headDepartment/HistoryRequest.vue'
+import QRLayout from '@/layouts/qrLayout.vue'
+
 
 const router = createRouter({
 	history: createWebHistory(import.meta.env.BASE_URL),
 	routes: [
+		// QR ROUTES
+		{
+			path: '/qr',
+			name: 'qr',
+			component: QRLayout,
+			meta: { layout: 'qrLayout' },
+		},
 		// AUTH ROUTES
 		{
 			path: '/login',
@@ -88,6 +97,18 @@ const router = createRouter({
 			name: 'confirmRequest',
 			meta: { layout: 'defaultLayout' },
 			component: () => import('../views/headDepartment/ConfrimRequest.vue'),
+		},
+		{
+			path: '/headDepartment/reports',
+			name: 'reports',
+			meta: { layout: 'defaultLayout' },
+			component: () => import('../views/headDepartment/Reports.vue'),
+		},
+		{
+			path: '/headDepartment/workingDays',
+			name: 'workingDays',
+			meta: { layout: 'defaultLayout' },
+			component: () => import('../views/headDepartment/WorkingDays.vue'),
 		},
 
 		// ACCOUNTANT ROUTERS

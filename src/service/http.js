@@ -25,7 +25,7 @@ const handleErrorResponse = (error, reject) => {
 }
 
 const axiosInstance = axios.create({
-	baseURL: 'https://attendances.onrender.com/api',
+	baseURL: 'http://localhost:8000/api',
 	timeout: 180000,
 	headers: {
 		'Content-Type': 'application/json',

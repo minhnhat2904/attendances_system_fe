@@ -3,6 +3,7 @@ import { useRoute } from 'vue-router'
 import { computed, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/auth.js'
 import DefaultLayout from '@/layouts/defaultLayout.vue'
+import QRLayout from '@/layouts/qrLayout.vue'
 import AuthLayout from '@/layouts/authLayout.vue'
 
 const { getAuthenticate } = useAuthStore()
@@ -12,6 +13,8 @@ const currentLayout = computed(() => {
 	switch (route.meta.layout) {
 		case 'defaultLayout':
 			return DefaultLayout
+		case 'qrLayout':
+			return QRLayout
 		case 'authLayout':
 			return AuthLayout
 		default:

@@ -43,10 +43,10 @@ const rules = computed(() => {
 		username: { required, email, minLength: minLength(10) },
 		password: { required, minLength: minLength(6) },
 		name: { required, minLength: minLength(2) },
-		phone: { required, numeric, minLength: minLength(10) },
+		phone: { required, minLength: minLength(10) },
 		address: { required, minLength: minLength(5) },
 		birthday: { required },
-		role: { required, numeric },
+		role: { required },
 		department: { required },
 	}
 })

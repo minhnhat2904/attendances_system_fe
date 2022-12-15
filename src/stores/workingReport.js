@@ -8,6 +8,7 @@ export const useWorkingReportStore = defineStore({
 	state: () => {
 		return {
 			workingReport: [],
+			allWorkingReport: []
 		}
 	},
 
@@ -16,6 +17,14 @@ export const useWorkingReportStore = defineStore({
 			try {
 				const response = await http.get(`/reports?userId=${userId}&startDate=${startDate}&endDate=${endDate}`)
 				this.workingReport = response.data.data
+			} catch (error) {
+				console.log(error)
+			}
+		},
+		async getAllWorkingReport(department, startDate='', endDate='') {
+			try {
+				const response = await http.get(`/allReports?department=${department}&startDate=${startDate}&endDate=${endDate}`)
+				this.allWorkingReport = response.data.data
 			} catch (error) {
 				console.log(error)
 			}

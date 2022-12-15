@@ -2,7 +2,7 @@
 import { reactive, ref, onMounted, computed } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useUserStore } from '@/stores/user.js'
-import { useCreateRequestStore } from '@/stores/createRequest.js'
+import { useAttendanceStore } from '@/stores/attendances.js'
 import { formatDay } from '../../helper/helper'
 import { useVuelidate } from '@vuelidate/core'
 import { required } from '@vuelidate/validators'
@@ -11,9 +11,9 @@ import { useToast } from 'vue-toastification'
 const isShowModal = ref(false)
 const isConfirm = ref(false)
 const { getProfile } = useUserStore()
-const { fetchRequestResult, updateRequestOff } = useCreateRequestStore()
+const { getWorkDayDepartment } = useAttendanceStore()
 const { userInfo } = storeToRefs(useUserStore())
-const { requestResultList } = storeToRefs(useCreateRequestStore())
+const { workDaysDepartment } = storeToRefs(useAttendanceStore())
 
 const entrySelected = ref(25)
 const entryOptions = reactive([
@@ -23,12 +23,6 @@ const entryOptions = reactive([
 	{ text: 100, value: '100' },
 ])
 
-const idLeave = ref()
-const requestTypes = reactive([
-	{ text: 'Waiting', value: 0 },
-	{ text: 'Approved', value: 1 },
-	{ text: 'Rejected', value: 2 },
-])
 
 const headers = reactive([
 	{
@@ -38,50 +32,28 @@ const headers = reactive([
 	},
 	{
 		type: 'dateTime',
-		value: 'Created',
+		value: 'Check in',
+		key: 'check_in',
+	},
+	{
+		type: 'dateTime',
+		value: 'Check out',
+		key: 'check_out',
+	},
+	{
+		type: 'dateTime',
+		value: 'Date',
 		key: 'createdAt',
-	},
-	{
-		type: 'dateTime',
-		value: 'From',
-		key: 'startDate',
-	},
-	{
-		type: 'dateTime',
-		value: 'To',
-		key: 'endDate',
-	},
-	{
-		type: 'string',
-		value: 'Time Off',
-		key: 'timeOff',
-	},
-	{
-		type: 'string',
-		value: 'Type Off',
-		key: 'typeOff',
-	},
-	{
-		type: 'string',
-		value: 'Reason',
-		key: 'reason',
-	},
-	{
-		type: 'action',
-		text: 'Action',
-		key: 'action',
-	},
+	}
 ])
 
 const filterConfirmRequest = reactive({
 	from: '',
 	to: '',
-	typeRequest: 0,
 })
 
 const rules = computed(() => {
 	return {
-		typeRequest: { required },
 	}
 })
 
@@ -89,7 +61,7 @@ const v$ = useVuelidate(rules, filterConfirmRequest)
 
 onMounted(async () => {
 	await getProfile()
-	fetchRequestResult(userInfo.value.department)
+	getWorkDayDepartment(userInfo.value.department)
 })
 
 const handleShowAcceptRequest = id => {
@@ -134,14 +106,8 @@ const handleSearch = async () => {
 	const result = await v$.value.$validate()
 
 	if (result) {
-		await fetchRequestResult(
-			userInfo.value.department,
-			'',
-			filterConfirmRequest.typeRequest,
-			filterConfirmRequest.from,
-			filterConfirmRequest.to,
-			entrySelected.value
-		)
+        await getAllWorkingReport(filterConfirmRequest.from,
+			filterConfirmRequest.to)
 	} else {
 		toast.error(`${v$.value.$errors[0].$property}-${v$.value.$errors[0].$message}`, {
 			timeout: 2000,
@@ -152,7 +118,7 @@ const handleSearch = async () => {
 <template>
 	<div class="project-manager p-4">
 		<div class="request-history-header">
-			<h3><b>Request History</b></h3>
+			<h3><b>Reports of user</b></h3>
 		</div>
 
 		<details class="search-area">
@@ -172,20 +138,6 @@ const handleSearch = async () => {
 					:min="filterConfirmRequest.from"
 					class="search-area-input"
 					v-model="filterConfirmRequest.to" />
-			</div>
-			<div class="search-status">
-				<p><b>Status</b></p>
-				<select
-					name="requestType"
-					id="requestTypeId"
-					v-model="filterConfirmRequest.typeRequest">
-					<option
-						v-for="(type, index) in requestTypes"
-						:key="index"
-						:value="type.value">
-						{{ type.text }}
-					</option>
-				</select>
 			</div>
 			<div class="d-flex gap-3 mt-4">
 				<button class="btn btn-success px-4" @click="handleSearch">Search</button>
@@ -221,7 +173,7 @@ const handleSearch = async () => {
 				</tr>
 			</thead>
 			<tbody class="table-body">
-				<tr v-for="item in requestResultList" :key="item">
+				<tr v-for="item in workDaysDepartment" :key="item">
 					<td v-for="header in headers" :key="header">
 						<span v-if="header.type === 'string'">{{ item[header.key] }}</span>
 						<span v-if="header.key === 'timeOff'">
@@ -281,26 +233,6 @@ const handleSearch = async () => {
 					<div v-else class="d-flex flex-column">
 						<h5>Does Not Accept Request</h5>
 					</div>
-				</div>
-
-				<div class="footer">
-					<button
-						type="button"
-						class="btn btn-success px-4"
-						@click="handleAcceptRequest"
-						v-if="isConfirm">
-						Accept
-					</button>
-					<button
-						type="button"
-						class="btn btn-success px-4"
-						@click="handleDoesNotAcceptRequest"
-						v-else>
-						Confrim
-					</button>
-					<button type="button" class="btn btn-danger px-4" @click="handleCancel">
-						Cancel
-					</button>
 				</div>
 			</div>
 		</div>

@@ -56,10 +56,10 @@ const v2$ = useVuelidate(rulesFilter, filterWorkingReport)
 
 const rules = computed(() => {
 	return {
-		time: { required, numeric },
+		time: { required },
 		note: { required, minLength: minLength(13) },
 		date: { required },
-		ticket: { required, numeric, minLength: minLength(3) },
+		ticket: { required, minLength: minLength(3) },
 		project: { required },
 		task: { required },
 	}

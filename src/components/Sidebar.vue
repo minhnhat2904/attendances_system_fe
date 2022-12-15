@@ -27,7 +27,7 @@ const toggleMenu = () => {
 		</div>
 		<!-- Role employee -->
 		<div
-			class="side-bar_list mt-5"
+			class="side-bar_list mt-3"
 			v-if="userInfo.role !== undefined && userInfo.role.includes('employee')">
 			<router-link class="side-bar-item" to="/">
 				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
@@ -47,7 +47,7 @@ const toggleMenu = () => {
 			</router-link>
 		</div>
 		<!-- Role Admin -->
-		<div class="side-bar_list" v-if="userInfo.role === 'admin'">
+		<div class="side-bar_list mt-3" v-if="userInfo.role === 'admin'">
 			<router-link class="side-bar-item" to="/admin/">
 				<span class="material-symbols-outlined side-bar-icon">
 					manage_accounts
@@ -80,13 +80,17 @@ const toggleMenu = () => {
 			v-if="
 				userInfo.role !== undefined && userInfo.role.includes('head_department')
 			">
-			<!-- <router-link class="side-bar-item" to="/headDepartment/">
-				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
-				<span class="title" v-if="isExpanded">History Request</span>
-			</router-link> -->
 			<router-link class="side-bar-item" to="/headDepartment/confirmRequest">
 				<span class="material-symbols-outlined side-bar-icon"> check </span>
 				<span class="title" v-if="isExpanded">Confirm request</span>
+			</router-link>
+			<router-link class="side-bar-item" to="/headDepartment/reports">
+				<span class="material-symbols-outlined side-bar-icon"> lab_profile </span>
+				<span class="title" v-if="isExpanded">Report of user</span>
+			</router-link>
+			<router-link class="side-bar-item" to="/headDepartment/workingDays">
+				<span class="material-symbols-outlined side-bar-icon"> wifi </span>
+				<span class="title" v-if="isExpanded">Working day of user</span>
 			</router-link>
 		</div>
 	</div>
@@ -99,14 +103,16 @@ const toggleMenu = () => {
 	justify-content: flex-start;
 	height: 100%;
 	overflow: visible;
-	background-color: #282c34;
+	background-color: #337ab7;
 	transition: 0.2s ease-out;
 	position: relative;
 	box-shadow: rgba(0, 0, 0, 0.3) 0px 1px 4px;
 	transition: 0.2s ease-out;
 
 	.logo {
-		height: 56px;
+		height: 50px;
+		background: #337ab7;
+		margin-top: 0px;
 	}
 
 	&_toggle-wrap {
