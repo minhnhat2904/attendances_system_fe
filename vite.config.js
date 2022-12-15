@@ -17,17 +17,10 @@ export default defineConfig({
     }),
     vuetify({autoImport: true})
   ],
-  base: './',
+  // base: './',
   resolve: {
     alias: {
       '@': fileURLToPath(new URL('./src', import.meta.url))
     }
-  },
-  css: {
-    preprocessorOptions: {
-      css: {
-        charset: false
-      }
-    },
   }
 })
