@@ -33,12 +33,12 @@ const headers = reactive([
 	{
 		type: 'dateTime',
 		value: 'Check in',
-		key: 'check_in',
+		key: 'checkIn',
 	},
 	{
 		type: 'dateTime',
 		value: 'Check out',
-		key: 'check_out',
+		key: 'checkOut',
 	},
 	{
 		type: 'dateTime',
@@ -118,7 +118,7 @@ const handleSearch = async () => {
 <template>
 	<div class="project-manager p-4">
 		<div class="request-history-header">
-			<h3><b>Reports of user</b></h3>
+			<h3><b>Working days of user</b></h3>
 		</div>
 
 		<details class="search-area">

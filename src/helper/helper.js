@@ -1,7 +1,7 @@
 import moment, { isDate } from 'moment'
 
 export function formatDay(date) {
-	return moment(date).format('DD/MM/YYYY HH:mm')
+	return moment(date).add(-7, 'hours').format('DD/MM/YYYY HH:mm')
 }
 
 export function hoursToDaysAndHours(hour) {

@@ -3,7 +3,7 @@ import { useAuthStore } from '@/stores/auth.js'
 export default (to, from, next) => {
 	const auth = useAuthStore()
 
-	let exceptionalRoutes = ['login', 'register', 'forgot-password', 'adminLogin']
+	let exceptionalRoutes = ['login', 'register', 'forgot-password', 'adminLogin', 'qr']
 	let isGoingExceptionalRoutes = exceptionalRoutes.includes(to.name)
 
 	/**
