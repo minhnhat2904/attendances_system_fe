@@ -19,6 +19,7 @@
     "pinia": "^2.0.11",
     "qs": "^6.11.0",
     "read-excel-file": "^5.5.3",
+    "scss": "^0.2.4",
     "vite-plugin-vuetify": "^1.0.0",
     "vue": "^3.2.31",
     "vue-router": "^4.0.12",
@@ -30,8 +31,11 @@
     "@vue/eslint-config-prettier": "^7.0.0",
     "eslint": "^8.5.0",
     "eslint-plugin-vue": "^8.2.0",
+    "node-sass": "^8.0.0",
     "prettier": "^2.5.1",
     "sass": "^1.49.10",
+    "sass-loader": "^13.2.0",
+    "style-loader": "^3.3.1",
     "vite": "^2.8.4"
   }
 }

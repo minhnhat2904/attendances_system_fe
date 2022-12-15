@@ -29,7 +29,7 @@ const toggleMenu = () => {
 		<div
 			class="side-bar_list mt-3"
 			v-if="userInfo.role !== undefined && userInfo.role.includes('employee')">
-			<router-link class="side-bar-item" to="/">
+			<router-link class="side-bar-item" to="/createRequest">
 				<span class="material-symbols-outlined side-bar-icon"> add_circle </span>
 				<span class="title" v-if="isExpanded">Create Request off</span>
 			</router-link>

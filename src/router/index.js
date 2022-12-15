@@ -41,8 +41,10 @@ const router = createRouter({
 			meta: { layout: 'authLayout' },
 		},
 		// USER ROUTES
+
 		{
 			path: '/',
+			alias: '/createRequest',
 			name: 'createRequest',
 			meta: { layout: 'defaultLayout' },
 			component: CreateRequestView,

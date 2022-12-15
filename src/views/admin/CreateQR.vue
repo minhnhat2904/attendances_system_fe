@@ -1,5 +1,4 @@
 <script setup>
-import { onMounted } from 'vue'
 import { storeToRefs } from 'pinia'
 
 import { useAdminStore } from '@/stores/admin.js'

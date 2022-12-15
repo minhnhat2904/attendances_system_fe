@@ -1,4 +1,4 @@
-import moment, { isDate } from 'moment'
+import moment from 'moment'
 
 export function formatDay(date) {
 	return moment(date).add(-7, 'hours').format('DD/MM/YYYY HH:mm')

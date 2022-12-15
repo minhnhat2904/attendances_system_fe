@@ -251,7 +251,7 @@ const sortedList = computed(() => {
 		</table>
 	</div>
 </template>
-<style lang="scss" scoped>
+<style lang="scss">
 .request-history-page {
 	padding: 1rem 2rem;
 	.search-area {

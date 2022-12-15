@@ -18,7 +18,7 @@ onMounted(async () => {
 	</div>
 </template>
 
-<style lang="scss">
+<style lang="scss" scoped>
 .layout-qr {
     width: 100%;
     height: 100vh;

@@ -1,4 +1,5 @@
 import { useAuthStore } from '@/stores/auth.js'
+import QRLayout from '@/layouts/qrLayout.vue'
 
 export default (to, from, next) => {
 	const auth = useAuthStore()
@@ -24,7 +25,12 @@ export default (to, from, next) => {
 	 * IF THE USER IS LOGGED IN
 	 */
 	if (auth.isLoggedIn && isGoingExceptionalRoutes) {
-		next({ name: 'createRequest', query: { 'redirect-reason': 'already logged' } })
+		if (to.name == 'qr') {
+			next()
+		} else {
+			next({ name: 'createRequest', query: { 'redirect-reason': 'already logged' } })
+
+		}
 	} else {
 		next()
 	}
